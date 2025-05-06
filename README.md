@@ -93,7 +93,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 If you use this software in your project, please provide attribution by including the following text in your documentation or credits:
 
 ```
-This project uses TinyPEG, created by Randy (https://github.com/Monotoba/tinypeg)
+This project uses TinyPEG, created by Randall Morgan (https://github.com/Monotoba/tinypeg)
 ```
 
 ## Contributing
