@@ -1,0 +1,7 @@
+````ebnf
+Expression ::= Term (("+" | "-") Term)*
+Term       ::= Factor (("*" | "/") Factor)*
+Factor     ::= Number | "(" Expression ")"
+Number     ::= [0-9]+
+
+````
