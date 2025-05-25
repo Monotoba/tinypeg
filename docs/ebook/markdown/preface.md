@@ -29,6 +29,16 @@ This documentation serves as both a reference guide and a tutorial for the TinyP
 3. Practical examples of building parsers for various use cases
 4. A step-by-step guide to creating a complete tiny programming language
 
+### Current Status
+
+The TinyPEG library is being actively developed. The current version includes:
+
+- A fixed implementation of the core parsing components in `fixed_core.py` and `fixed_parsers.py`
+- Working examples in the `examples` directory, including a standalone TinyCL implementation
+- Comprehensive documentation and tutorials
+
+For the most up-to-date information about the project's status, see the [Project Status](../../status.md) document.
+
 Whether you're a student learning about parsing for the first time, a developer looking to build a custom parser, or an educator teaching language design, we hope this documentation provides valuable insights and practical guidance.
 
 Let's embark on this journey into the fascinating world of parsing and language design!
@@ -36,3 +46,7 @@ Let's embark on this journey into the fascinating world of parsing and language 
 ---
 
 *"Programming languages are how programmers express and communicate ideas — and, occasionally, frustrations."* — Simon Peyton Jones
+
+---
+
+**Copyright © 2024 Randall Morgan. All rights reserved.**

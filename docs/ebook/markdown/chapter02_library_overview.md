@@ -42,16 +42,16 @@ The `Reference` class is a crucial component that allows grammar rules to refere
 ```python
 class Reference(Expression):
     """Reference to another rule or pattern in the grammar."""
-    
+
     def __init__(self, name):
         """
         Initialize a reference to another rule or pattern.
-        
+
         Args:
             name: The name of the rule or pattern being referenced
         """
         self.name = name
-        
+
     def parse(self, ctx):
         # This will be implemented by the grammar system
         # that resolves references to actual rules
@@ -110,13 +110,28 @@ class PEGParser:
     """Parser class that uses PEG grammar rules."""
 
     def __init__(self):
-        pass  # Any setup like tokenizer or state goes here
+        self.grammar = None  # To be defined by subclasses
 
     def parse(self, text: str):
-        # Placeholder logic for now
-        print("Parsing input...")
-        # Return a dummy GrammarNode
-        return GrammarNode(name="DummyGrammar", rules=[])
+        """Parse input text according to the grammar."""
+        if self.grammar is None:
+            raise ValueError("Grammar not defined")
+
+        # Create parser context
+        ctx = ParserContext(text)
+
+        # Apply the start rule (first rule in grammar)
+        if self.grammar.rules:
+            result = self._parse_expression(self.grammar.rules[0].expr, ctx)
+            if not ctx.eof():
+                raise ParseError(f"Unexpected input at position {ctx.pos}")
+            return result
+
+        raise ParseError("No rules defined in grammar")
+
+    def _parse_expression(self, expr, ctx):
+        """Parse an expression with the given context."""
+        return expr.parse(ctx)
 ```
 
 In a complete implementation, the `parse` method would:
@@ -152,11 +167,11 @@ The `GrammarNode` class represents a node in the grammar's syntax tree. It conta
 ```python
 class GrammarNode:
     """Node in the grammar syntax tree."""
-    
+
     def __init__(self, name, rules):
         self.name = name
         self.rules = rules
-    
+
     def accept(self, visitor):
         """Accept a visitor to traverse the grammar tree."""
         visitor.visit_grammar(self)
@@ -173,10 +188,10 @@ The `DebugVisitor` class is a utility for debugging grammars. It traverses a gra
 ```python
 class DebugVisitor:
     """Visitor for debugging grammar trees."""
-    
+
     def visit_grammar(self, grammar):
         print(f"Grammar: {grammar.name}")
-    
+
     def visit_rule(self, rule):
         print(f"  Rule: {rule.name}")
 ```
@@ -199,16 +214,16 @@ class TestParserContext(unittest.TestCase):
         ctx = ParserContext("test")
         self.assertEqual(ctx.text, "test")
         self.assertEqual(ctx.pos, 0)
-    
+
     def test_eof(self):
         ctx = ParserContext("")
         self.assertTrue(ctx.eof())
-        
+
         ctx = ParserContext("a")
         self.assertFalse(ctx.eof())
         ctx.pos = 1
         self.assertTrue(ctx.eof())
-    
+
     def test_peek(self):
         ctx = ParserContext("abc")
         self.assertEqual(ctx.peek(), "a")
@@ -216,7 +231,7 @@ class TestParserContext(unittest.TestCase):
         self.assertEqual(ctx.peek(), "b")
         ctx.pos = 3  # Beyond the end
         self.assertIsNone(ctx.peek())
-    
+
     def test_consume(self):
         ctx = ParserContext("abc")
         self.assertEqual(ctx.consume(), "a")
@@ -232,7 +247,7 @@ class TestReference(unittest.TestCase):
     def test_initialization(self):
         ref = Reference("TestRule")
         self.assertEqual(ref.name, "TestRule")
-    
+
     def test_parse_not_implemented(self):
         ref = Reference("TestRule")
         ctx = ParserContext("test")
@@ -255,7 +270,7 @@ class MockExpression(Expression):
     def __init__(self, result=True):
         self.result = result
         self.called = False
-    
+
     def parse(self, ctx):
         self.called = True
         return self.result
@@ -266,7 +281,7 @@ class TestRule(unittest.TestCase):
         rule = Rule("TestRule", expr)
         self.assertEqual(rule.name, "TestRule")
         self.assertEqual(rule.expr, expr)
-    
+
     def test_parse(self):
         expr = MockExpression(True)
         rule = Rule("TestRule", expr)
@@ -280,7 +295,7 @@ class TestPEGParser(unittest.TestCase):
         parser = PEGParser()
         # Basic initialization test
         self.assertIsInstance(parser, PEGParser)
-    
+
     def test_parse(self):
         parser = PEGParser()
         result = parser.parse("test input")
@@ -308,10 +323,10 @@ class MockVisitor:
     def __init__(self):
         self.visited_grammars = []
         self.visited_rules = []
-    
+
     def visit_grammar(self, grammar):
         self.visited_grammars.append(grammar)
-    
+
     def visit_rule(self, rule):
         self.visited_rules.append(rule)
 
@@ -321,7 +336,7 @@ class TestGrammarNode(unittest.TestCase):
         grammar = GrammarNode("TestGrammar", rules)
         self.assertEqual(grammar.name, "TestGrammar")
         self.assertEqual(grammar.rules, rules)
-    
+
     def test_accept(self):
         rules = [MockRule("Rule1"), MockRule("Rule2")]
         grammar = GrammarNode("TestGrammar", rules)
@@ -341,7 +356,7 @@ class TestDebugVisitor(unittest.TestCase):
         grammar = GrammarNode("TestGrammar", [])
         visitor.visit_grammar(grammar)
         # No assertion, just make sure it doesn't raise an exception
-    
+
     def test_visit_rule(self):
         visitor = DebugVisitor()
         rule = MockRule("TestRule")

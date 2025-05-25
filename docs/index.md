@@ -12,13 +12,30 @@ TinyPEG is a parser library that allows you to define grammars using Parsing Exp
 
 ## Getting Started
 
-- [Preface](preface.md): Introduction to parsing and grammar concepts
-- [Contents](contents.md): Full table of contents
-- [Chapter 1](chapter01_peg_basics.md): Understanding PEG Parsers
-- [Chapter 2](chapter02_library_overview.md): TinyPEG Library Overview
-- [Chapter 3](chapter03_building_parsers.md): Building Your First Parser
-- [Chapter 4](chapter04_examples.md): Example Parsers
-- [Chapter 5](chapter05_tiny_language.md): Creating a Tiny Programming Language
+We've created a comprehensive e-book to help you learn about PEG parsers and how to build your own programming language:
+
+**📚 Complete E-book: "Building Parsers with PEG"**
+- **[Complete PDF](ebook/pdf/tinypeg_complete_ebook.pdf)** - Full book with covers (517 KB)
+- **[HTML Version](ebook/html/)** - Web-readable format
+
+**📖 Individual Chapters:**
+- [Chapter 1](ebook/markdown/chapter01_peg_basics.md): Understanding PEG Parsers
+- [Chapter 2](ebook/markdown/chapter02_library_overview.md): TinyPEG Library Overview
+- [Chapter 3](ebook/markdown/chapter03_building_parsers.md): Building Your First Parser
+- [Chapter 4](ebook/markdown/chapter04_examples.md): Example Parsers and Applications
+- [Chapter 5](ebook/markdown/chapter05_tiny_language.md): Creating TinyCL - A Complete Programming Language
+
+## TinyCL Language
+
+TinyCL is a small programming language implemented using the TinyPEG library. It includes:
+
+- Variables and constants
+- Functions with parameters
+- Control flow (if/else, while)
+- Expressions with operator precedence
+- Basic I/O with print statements
+
+For more details, see the [TinyCL Complete Reference](../TINYCL_COMPLETE_REFERENCE.md).
 
 ## Quick Example
 
@@ -29,7 +46,7 @@ from src.peg import PEGParser, Rule, Reference, GrammarNode
 class ArithmeticParser(PEGParser):
     def __init__(self):
         super().__init__()
-        
+
         # Define grammar for arithmetic expressions
         self.grammar = GrammarNode(
             name="Arithmetic",
@@ -48,10 +65,12 @@ result = parser.parse("42")
 
 ## License
 
-This project is open source and available under the [MIT License](../LICENSE).
+This project is open source and available under the MIT License.
 
-If you use this software in your project, please provide attribution by including the following text in your documentation or credits:
+## 👤 Author
 
-```
-This project uses TinyPEG, created by Randy (https://github.com/Monotoba/tinypeg)
-```
+**Randall Morgan** - Experienced software engineer specializing in programming language implementation and compiler design.
+
+## 📄 Copyright
+
+Copyright © 2024 Randall Morgan. All rights reserved.

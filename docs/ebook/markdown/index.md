@@ -23,29 +23,34 @@ TinyPEG is a parser library that allows you to define grammars using Parsing Exp
 ## Quick Example
 
 ```python
-from src.peg import PEGParser, Rule, Reference, GrammarNode
+from src.peg.fixed_parsers import PEGParser, Rule, Regex
+from src.peg.fixed_core import GrammarNode
 
-# Create a simple arithmetic expression parser
-class ArithmeticParser(PEGParser):
+# Create a simple number parser
+class SimpleParser(PEGParser):
     def __init__(self):
         super().__init__()
-        
-        # Define grammar for arithmetic expressions
+
+        # Define a simple grammar for numbers
         self.grammar = GrammarNode(
-            name="Arithmetic",
+            name="Simple",
             rules=[
-                Rule("Expression", Reference("Term")),
-                Rule("Term", Reference("Factor")),
-                Rule("Factor", Reference("Number")),
-                Rule("Number", Reference("[0-9]+")),
+                Rule("Number", Regex("[0-9]+"))
             ]
         )
 
 # Use the parser
-parser = ArithmeticParser()
+parser = SimpleParser()
 result = parser.parse("42")
+print(f"Parsed result: {result}")  # Output: Parsed result: 42
 ```
+
+For a complete working example, see the [Simple Fixed Test](../../examples/simple_fixed_test.py) in the examples directory.
 
 ## License
 
 This project is open source and available under the [MIT License](LICENSE).
+
+## Copyright
+
+Copyright © 2024 Randall Morgan. All rights reserved.

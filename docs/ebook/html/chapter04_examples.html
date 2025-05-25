@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chapter 4: Example Parsers and Applications</title>
+    <style>
+body { font-family: Arial, sans-serif; line-height: 1.6; max-width: 800px; margin: 0 auto; padding: 20px; }
+pre { background-color: #f5f5f5; padding: 10px; border-radius: 5px; overflow-x: auto; }
+code { font-family: monospace; }
+h1, h2, h3 { color: #333; }
+a { color: #0066cc; }
+    </style>
+</head>
+<body>
+<h1>Chapter 4: Example Parsers and Applications</h1>
+<p>In this chapter, we'll explore the comprehensive collection of example parsers included with the TinyPEG library. These examples demonstrate different aspects of parser implementation, from simple calculators to complete programming languages, and can serve as templates for your own parsers.</p>
+<p>Our examples are organized into three main categories:
+- <strong>Calculator Examples</strong>: Arithmetic expression parsers with increasing complexity
+- <strong>Language Parser Examples</strong>: Simple programming language constructs
+- <strong>TinyCL Language</strong>: Complete programming language implementation</p>
+<h2>4.1 Calculator Examples</h2>
+<p>The calculator examples demonstrate how to build arithmetic expression parsers with increasing complexity, showing proper operator precedence and evaluation.</p>
+<h3>4.1.1 Simple Calculator</h3>
+<p>The simple calculator (<code>examples/peg_usage/calculators/simple_calculator.py</code>) supports only addition and subtraction:</p>
+<p>```python</p>
+<h1>!/usr/bin/env python3</h1>
+<p>"""
+Simple calculator example using the TinyPEG library.
+Supports only addition and subtraction.
+"""</p>
+<p>from calculator_base import SimpleCalculator</p>
+<p>def main():
+    """Test the simple calculator."""
+    calculator = SimpleCalculator()</p>
+<pre><code># Test expressions for simple arithmetic
+expressions = [
+    "3",
+    "42",
+    "3+5",
+    "3 + 5",
+    "10 - 4",
+    "3 + 5 - 2",
+    "100 + 200 - 50"
+]
+
+print("=== Simple Calculator (Addition/Subtraction Only) ===")
+calculator.test_expressions(expressions)
+</code></pre>
+<p>if <strong>name</strong> == "<strong>main</strong>":
+    main()
+```</p>
+<p>This calculator uses a base class that handles the common parsing logic and provides a clean interface for testing expressions.</p>
+<h3>4.1.2 Advanced Calculator</h3>
+<p>The advanced calculator (<code>examples/peg_usage/calculators/advanced_calculator.py</code>) supports full arithmetic with proper precedence:</p>
+<p>```python</p>
+<h1>!/usr/bin/env python3</h1>
+<p>"""
+Advanced calculator with full arithmetic operations and precedence.
+"""</p>
+<p>from calculator_base import AdvancedCalculator</p>
+<p>def main():
+    """Test the advanced calculator."""
+    calculator = AdvancedCalculator()</p>
+<pre><code># Test expressions with precedence and parentheses
+expressions = [
+    "3",
+    "42",
+    "3+5",
+    "3 + 5",
+    "10 - 4",
+    "3 * 5",
+    "10 / 2",
+    "3 + 5 * 2",        # Should be 13 with proper precedence
+    "10 - 2 * 3",       # Should be 4 with proper precedence
+    "3 * 5 + 2",        # Should be 17
+    "10 / 2 - 3",       # Should be 2
+    "(3 + 5) * 2",      # Should be 16
+    "3 + (5 * 2)",      # Should be 13
+    "3 * (5 + 2)",      # Should be 21
+    "(3 + 5) * (2 + 1)" # Should be 24
+]
+
+print("=== Advanced Calculator (Full Arithmetic with Precedence) ===")
+calculator.test_expressions(expressions)
+</code></pre>
+<p>if <strong>name</strong> == "<strong>main</strong>":
+    main()
+```</p>
+<h3>4.1.3 Calculator Base Classes</h3>
+<p>Both calculators inherit from base classes in <code>calculator_base.py</code> that provide the core parsing logic:</p>
+<p>```python
+from src.peg import (
+    PEGParser, Rule, Reference, ParseError,
+    Sequence, Choice, ZeroOrMore, Literal, Regex
+)
+from src.peg.syntax_tree import GrammarNode</p>
+<p>class AdvancedCalculator(PEGParser):
+    """Advanced calculator with full arithmetic operations and precedence."""</p>
+<pre><code>def __init__(self):
+    super().__init__()
+
+    # Define grammar with proper precedence
+    self.grammar = GrammarNode(
+        name="Expression",
+        rules=[
+            # Expression = Term (('+' | '-') Term)*
+            Rule("Expression", Sequence(
+                Reference("Term"),
+                ZeroOrMore(
+                    Sequence(
+                        Choice(Literal("+"), Literal("-")),
+                        Reference("Term")
+                    )
+                )
+            )),
+
+            # Term = Factor (('*' | '/') Factor)*
+            Rule("Term", Sequence(
+                Reference("Factor"),
+                ZeroOrMore(
+                    Sequence(
+                        Choice(Literal("*"), Literal("/")),
+                        Reference("Factor")
+                    )
+                )
+            )),
+
+            # Factor = Number | '(' Expression ')'
+            Rule("Factor", Choice(
+                Reference("Number"),
+                Sequence(
+                    Literal("("),
+                    Reference("Expression"),
+                    Literal(")")
+                )
+            )),
+
+            # Number = [0-9]+
+            Rule("Number", Regex("[0-9]+"))
+        ]
+    )
+</code></pre>
+<p>```</p>
+<p>This implementation demonstrates proper operator precedence and parentheses handling.</p>
+<h3>4.1.4 Testing and Usage</h3>
+<p>To test the calculator examples, run them directly:</p>
+<p>```bash</p>
+<h1>Test simple calculator (addition/subtraction only)</h1>
+<p>cd examples/peg_usage/calculators
+python simple_calculator.py</p>
+<h1>Test advanced calculator (full arithmetic with precedence)</h1>
+<p>python advanced_calculator.py
+```</p>
+<p>To use the calculators in your own code:</p>
+<p>```python
+from examples.peg_usage.calculators.calculator_base import AdvancedCalculator</p>
+<p>calculator = AdvancedCalculator()
+result = calculator.evaluate("3 + 5 * 2")
+print(f"Result: {result}")  # Output: Result: 13
+```</p>
+<h2>4.2 Language Parser Examples</h2>
+<p>The language parser examples demonstrate how to parse various programming language constructs. These are located in <code>examples/peg_usage/language_parsers/</code>.</p>
+<h3>4.2.1 Basic Language Constructs</h3>
+<p>Our examples include parsers for fundamental programming language elements:</p>
+<h4>Number Parser</h4>
+<p>The simplest example (<code>number_parser.py</code>) parses just numbers:</p>
+<p>```python
+from src.peg import PEGParser, Rule, Regex
+from src.peg.syntax_tree import GrammarNode</p>
+<p>class NumberParser(PEGParser):
+    def <strong>init</strong>(self):
+        super().<strong>init</strong>()
+        self.grammar = GrammarNode(
+            name="Number",
+            rules=[
+                Rule("Number", Regex("[0-9]+"))
+            ]
+        )
+```</p>
+<h4>If Statement Parser</h4>
+<p>The if statement parser (<code>ifstmt.py</code>) demonstrates conditional parsing:</p>
+<p>```python
+from src.peg import (
+    PEGParser, Rule, Reference, Sequence, Choice,
+    Literal, Regex
+)
+from src.peg.syntax_tree import GrammarNode</p>
+<p>class IfStatementParser(PEGParser):
+    def <strong>init</strong>(self):
+        super().<strong>init</strong>()</p>
+<pre><code>    self.grammar = GrammarNode(
+        name="IfStatement",
+        rules=[
+            Rule("IfStatement", Sequence(
+                Literal("if"),
+                Literal("("),
+                Reference("Condition"),
+                Literal(")"),
+                Reference("Block")
+            )),
+            Rule("Condition", Reference("Expression")),
+            Rule("Block", Sequence(
+                Literal("{"),
+                Reference("Statement"),
+                Literal("}")
+            )),
+            Rule("Statement", Reference("PrintStatement")),
+            Rule("PrintStatement", Sequence(
+                Literal("print"),
+                Literal("("),
+                Reference("Expression"),
+                Literal(")"),
+                Literal(";")
+            )),
+            Rule("Expression", Reference("Identifier")),
+            Rule("Identifier", Regex("[a-zA-Z_][a-zA-Z0-9_]*"))
+        ]
+    )
+</code></pre>
+<p>```</p>
+<h4>While Loop Parser</h4>
+<p>The while loop parser (<code>while.py</code>) handles iterative constructs:</p>
+<p>```python
+class WhileLoopParser(PEGParser):
+    def <strong>init</strong>(self):
+        super().<strong>init</strong>()</p>
+<pre><code>    self.grammar = GrammarNode(
+        name="WhileLoop",
+        rules=[
+            Rule("WhileLoop", Sequence(
+                Literal("while"),
+                Literal("("),
+                Reference("Condition"),
+                Literal(")"),
+                Reference("Block")
+            )),
+            # ... similar structure to if statement
+        ]
+    )
+</code></pre>
+<p>```</p>
+<h3>4.2.2 TinyCL Language Variants</h3>
+<p>We also have several TinyCL language parser examples that demonstrate different levels of complexity:</p>
+<h4>Minimal TinyCL</h4>
+<p>The minimal TinyCL parser (<code>minimal_tinycl.py</code>) implements a very basic subset:</p>
+<p>```python
+from src.peg import (
+    PEGParser, Rule, Reference, Sequence, Choice,
+    ZeroOrMore, Literal, Regex
+)
+from src.peg.syntax_tree import GrammarNode</p>
+<p>class MinimalTinyCLParser(PEGParser):
+    def <strong>init</strong>(self):
+        super().<strong>init</strong>()</p>
+<pre><code>    self.grammar = GrammarNode(
+        name="MinimalTinyCL",
+        rules=[
+            Rule("Program", ZeroOrMore(Reference("Statement"))),
+            Rule("Statement", Choice(
+                Reference("VariableDecl"),
+                Reference("PrintStatement")
+            )),
+            Rule("VariableDecl", Sequence(
+                Literal("var"),
+                Reference("Identifier"),
+                Literal("="),
+                Reference("Expression"),
+                Literal(";")
+            )),
+            Rule("PrintStatement", Sequence(
+                Literal("print"),
+                Literal("("),
+                Reference("Expression"),
+                Literal(")"),
+                Literal(";")
+            )),
+            Rule("Expression", Reference("Number")),
+            Rule("Number", Regex("[0-9]+")),
+            Rule("Identifier", Regex("[a-zA-Z_][a-zA-Z0-9_]*"))
+        ]
+    )
+</code></pre>
+<p>```</p>
+<h4>Simple TinyCL</h4>
+<p>The simple TinyCL parser (<code>simple_tinycl.py</code>) adds arithmetic expressions:</p>
+<p>```python</p>
+<h1>Extends minimal TinyCL with arithmetic operations</h1>
+<p>Rule("Expression", Sequence(
+    Reference("Term"),
+    ZeroOrMore(Sequence(
+        Choice(Literal("+"), Literal("-")),
+        Reference("Term")
+    ))
+)),
+Rule("Term", Sequence(
+    Reference("Factor"),
+    ZeroOrMore(Sequence(
+        Choice(Literal("*"), Literal("/")),
+        Reference("Factor")
+    ))
+)),
+Rule("Factor", Choice(
+    Reference("Number"),
+    Reference("Identifier"),
+    Sequence(Literal("("), Reference("Expression"), Literal(")"))
+))
+```</p>
+<h4>Standalone TinyCL</h4>
+<p>The standalone TinyCL parser (<code>standalone_tinycl.py</code>) is a complete, self-contained implementation that can be used independently.</p>
+<h2>4.3 Complete TinyCL Implementation</h2>
+<p>The complete TinyCL (Tiny C-Like Language) implementation is our flagship example, demonstrating a full-featured programming language with parser, interpreter, and compiler.</p>
+<h3>4.3.1 TinyCL Features</h3>
+<p>The complete TinyCL implementation (<code>examples/tinycl_language/</code>) includes:</p>
+<ul>
+<li><strong>Variables and Constants</strong>: <code>var x = 10;</code> and <code>const PI = 3;</code></li>
+<li><strong>Functions</strong>: <code>func add(a, b) { return a + b; }</code></li>
+<li><strong>Arrays</strong>: <code>[1, 2, 3]</code> with indexing <code>arr[0]</code></li>
+<li><strong>Control Flow</strong>: If-else statements and while loops</li>
+<li><strong>Full Expression System</strong>: Arithmetic, logical, and comparison operators</li>
+<li><strong>Data Types</strong>: Numbers, strings, characters, booleans, arrays</li>
+<li><strong>Built-in Functions</strong>: <code>print()</code> for output</li>
+</ul>
+<h3>4.3.2 Comprehensive Test</h3>
+<p>The comprehensive test (<code>comprehensive_test.py</code>) demonstrates all TinyCL features:</p>
+<p>```python</p>
+<h1>!/usr/bin/env python3</h1>
+<p>"""
+Comprehensive test of the TinyCL language implementation.
+"""</p>
+<p>from src.tinycl.parser import TinyCLParser
+from src.tinycl.interpreter import TinyCLInterpreter</p>
+<p>def test_complete_program():
+    """Test a complete TinyCL program with all features."""</p>
+<pre><code>program = '''
+# TinyCL Comprehensive Test Program
+
+# Constants and variables
+const MAX = 10;
+var numbers = [5, 3, 8, 1, 9];
+var sum = 0;
+
+# Function to calculate factorial
+func factorial(n) {
+    if (n &lt;= 1) {
+        return 1;
+    } else {
+        return n * factorial(n - 1);
+    }
+}
+
+# Calculate sum of array
+var i = 0;
+while (i &lt; 5) {
+    sum = sum + numbers[i];
+    i = i + 1;
+}
+
+print("Array sum: " + sum);
+
+# Test factorial function
+var fact5 = factorial(5);
+print("Factorial of 5: " + fact5);
+
+# Test logical operations
+if (sum &gt; 20 &amp;&amp; fact5 &gt; 100) {
+    print("Both conditions are true!");
+}
+'''
+
+# Parse the program
+parser = TinyCLParser()
+ast = parser.parse(program)
+
+# Interpret the program
+interpreter = TinyCLInterpreter()
+interpreter.interpret(ast)
+</code></pre>
+<p>if <strong>name</strong> == "<strong>main</strong>":
+    test_complete_program()
+```</p>
+<h3>4.3.3 Multi-Target Compilation</h3>
+<p>TinyCL also includes compilers that can generate code for different targets:</p>
+<h4>Python Compiler</h4>
+<p>```python
+from src.tinycl.compiler import PythonCompiler</p>
+<p>compiler = PythonCompiler()
+python_code = compiler.compile(ast)
+print("Generated Python code:")
+print(python_code)
+```</p>
+<h4>C Compiler</h4>
+<p>```python
+from src.tinycl.compiler import CCompiler</p>
+<p>compiler = CCompiler()
+c_code = compiler.compile(ast)
+print("Generated C code:")
+print(c_code)
+```</p>
+<h2>4.4 Running the Examples</h2>
+<p>All examples can be run directly from their respective directories:</p>
+<h3>Calculator Examples</h3>
+<p>```bash</p>
+<h1>Navigate to calculator examples</h1>
+<p>cd examples/peg_usage/calculators</p>
+<h1>Run simple calculator</h1>
+<p>python simple_calculator.py</p>
+<h1>Run advanced calculator</h1>
+<p>python advanced_calculator.py</p>
+<h1>Run number parser</h1>
+<p>python number_parser.py
+```</p>
+<h3>Language Parser Examples</h3>
+<p>```bash</p>
+<h1>Navigate to language parser examples</h1>
+<p>cd examples/peg_usage/language_parsers</p>
+<h1>Run minimal TinyCL</h1>
+<p>python minimal_tinycl.py</p>
+<h1>Run simple TinyCL</h1>
+<p>python simple_tinycl.py</p>
+<h1>Run if statement parser</h1>
+<p>python ifstmt.py</p>
+<h1>Run while loop parser</h1>
+<p>python while.py</p>
+<h1>Run EmLang parser</h1>
+<p>python emlang.py
+```</p>
+<h3>Complete TinyCL</h3>
+<p>```bash</p>
+<h1>Navigate to TinyCL examples</h1>
+<p>cd examples/tinycl_language</p>
+<h1>Run comprehensive test</h1>
+<p>python comprehensive_test.py
+```</p>
+<h2>4.5 Example Organization</h2>
+<p>Our examples are organized to show progression from simple to complex:</p>
+<p>| Category | Complexity | Features Demonstrated |
+|----------|------------|----------------------|
+| <strong>Basic Parsers</strong> | Simple | Single constructs, basic parsing |
+| <strong>Calculator Examples</strong> | Medium | Expression parsing, precedence, evaluation |
+| <strong>Language Parsers</strong> | Medium-High | Multiple constructs, grammar composition |
+| <strong>TinyCL Complete</strong> | High | Full language, interpreter, compiler |</p>
+<h2>Summary</h2>
+<p>This chapter has explored the comprehensive collection of example parsers included with the TinyPEG library. These examples demonstrate:</p>
+<ol>
+<li><strong>Progressive Complexity</strong>: From simple number parsing to complete programming languages</li>
+<li><strong>Real-World Applications</strong>: Practical examples that can be adapted for your own projects</li>
+<li><strong>Best Practices</strong>: Proper grammar design, error handling, and code organization</li>
+<li><strong>Complete Implementation</strong>: Full language implementation with parser, interpreter, and compiler</li>
+</ol>
+<p>Key takeaways:</p>
+<ul>
+<li><strong>Start Simple</strong>: Begin with basic constructs and gradually add complexity</li>
+<li><strong>Proper Structure</strong>: Organize grammars with clear precedence and modularity</li>
+<li><strong>Testing</strong>: Each example includes comprehensive testing to verify functionality</li>
+<li><strong>Documentation</strong>: All examples are well-documented and self-contained</li>
+</ul>
+<p>By studying these examples and experimenting with them, you'll gain practical experience with the TinyPEG library and be ready to build parsers for your own domain-specific languages and applications.</p>
+<p>The examples serve as both learning tools and starting points for your own parser projects. Whether you're building a simple calculator or a complete programming language, these examples provide the foundation and patterns you need to succeed.</p>
+</body>
+</html>

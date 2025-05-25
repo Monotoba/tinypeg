@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Table of Contents</title>
+    <style>
+body { font-family: Arial, sans-serif; line-height: 1.6; max-width: 800px; margin: 0 auto; padding: 20px; }
+pre { background-color: #f5f5f5; padding: 10px; border-radius: 5px; overflow-x: auto; }
+code { font-family: monospace; }
+h1, h2, h3 { color: #333; }
+a { color: #0066cc; }
+    </style>
+</head>
+<body>
+<h1>Table of Contents</h1>
+<h2><a href="preface.md">Preface</a></h2>
+<ul>
+<li>The Art and Science of Parsing</li>
+<li>Why Parsing Expression Grammars?</li>
+<li>About This Documentation</li>
+</ul>
+<h2><a href="chapter01_peg_basics.md">Chapter 1: Understanding PEG Parsers</a></h2>
+<ul>
+<li>1.1 Introduction to Parsing Expression Grammars</li>
+<li>1.2 PEG vs. Context-Free Grammars</li>
+<li>1.3 PEG Operators and Notation</li>
+<li>1.4 Recursive Descent Parsing</li>
+<li>1.5 Packrat Parsing and Memoization</li>
+<li>1.6 TinyPEG Implementation Preview</li>
+</ul>
+<h2><a href="chapter02_library_overview.md">Chapter 2: TinyPEG Library Overview</a></h2>
+<ul>
+<li>2.1 Architecture and Design Philosophy</li>
+<li>2.2 Core Components</li>
+<li>2.2.1 Expression Class</li>
+<li>2.2.2 Reference Class</li>
+<li>2.2.3 ParserContext Class</li>
+<li>2.2.4 ParseError Class</li>
+<li>2.3 Parser Components</li>
+<li>2.3.1 PEGParser Class</li>
+<li>2.3.2 Rule Class</li>
+<li>2.4 Syntax Tree Components</li>
+<li>2.4.1 GrammarNode Class</li>
+<li>2.4.2 DebugVisitor Class</li>
+<li>2.5 Testing the Library</li>
+</ul>
+<h2><a href="chapter03_building_parsers.md">Chapter 3: Building Your First Parser</a></h2>
+<ul>
+<li>3.1 Setting Up the Environment</li>
+<li>3.2 Creating a Simple Numeric Expression Parser</li>
+<li>3.3 Adding Support for Operators</li>
+<li>3.4 Handling Parentheses and Precedence</li>
+<li>3.5 Building an Abstract Syntax Tree</li>
+<li>3.6 Evaluating Expressions</li>
+<li>Summary</li>
+</ul>
+<h2><a href="chapter04_examples.md">Chapter 4: Example Parsers and Applications</a></h2>
+<ul>
+<li>4.1 Calculator Examples</li>
+<li>4.1.1 Simple Calculator</li>
+<li>4.1.2 Advanced Calculator</li>
+<li>4.1.3 Calculator Base Classes</li>
+<li>4.1.4 Testing and Usage</li>
+<li>4.2 Language Parser Examples</li>
+<li>4.2.1 Basic Language Constructs</li>
+<li>4.2.2 TinyCL Language Variants</li>
+<li>4.3 Complete TinyCL Implementation</li>
+<li>4.3.1 TinyCL Features</li>
+<li>4.3.2 Comprehensive Test</li>
+<li>4.3.3 Multi-Target Compilation</li>
+<li>4.4 Running the Examples</li>
+<li>4.5 Example Organization</li>
+<li>Summary</li>
+</ul>
+<h2><a href="chapter05_tiny_language.md">Chapter 5: Creating TinyCL - A Complete Programming Language</a></h2>
+<ul>
+<li>5.1 TinyCL Language Overview</li>
+<li>5.1.1 Language Features</li>
+<li>5.1.2 Complete Grammar Specification</li>
+<li>5.2 Complete Implementation Overview</li>
+<li>5.2.1 Parser Implementation</li>
+<li>5.3 Building the Abstract Syntax Tree</li>
+<li>5.3.1 AST Node Classes</li>
+<li>5.3.2 Tree Construction</li>
+<li>5.4 Semantic Analysis</li>
+<li>5.4.1 Symbol Table</li>
+<li>5.4.2 Type Checking</li>
+<li>5.5 Interpreter Implementation</li>
+<li>5.5.1 Runtime Environment</li>
+<li>5.5.2 Expression Evaluation</li>
+<li>5.5.3 Statement Execution</li>
+<li>5.6 Example Programs and Testing</li>
+<li>Summary</li>
+</ul>
+<h2><a href="appendix_a_peg_reference.md">Appendix A: TinyPEG Library Reference</a></h2>
+<ul>
+<li>A.1 TinyPEG Implementation Overview</li>
+<li>A.1.1 Core Architecture</li>
+<li>A.1.2 Grammar Definition</li>
+<li>A.1.3 TinyPEG Expression Classes</li>
+<li>A.1.4 Complete Example</li>
+<li>A.1.5 TinyPEG Semantics</li>
+<li>A.2 Common TinyPEG Patterns</li>
+<li>A.2.1 Whitespace Handling</li>
+<li>A.2.2 Identifiers</li>
+<li>A.2.3 Numbers</li>
+<li>A.2.4 Strings</li>
+<li>A.2.5 Comments</li>
+<li>A.2.6 Expressions with Precedence</li>
+<li>A.3 Comparison with Regular Expressions</li>
+<li>A.4 TinyPEG Implementation Details</li>
+<li>A.4.1 Memoization</li>
+<li>A.4.2 Left Recursion Handling</li>
+<li>A.4.3 Error Reporting</li>
+<li>A.4.4 AST Building</li>
+<li>A.4.5 Whitespace Handling</li>
+<li>A.5 TinyPEG vs Other PEG Libraries</li>
+<li>A.6 Complete API Reference</li>
+<li>Summary</li>
+</ul>
+<h2><a href="appendix_b_testing.md">Appendix B: Testing Framework</a></h2>
+<ul>
+<li>B.1 Unit Testing Parsers</li>
+<li>B.2 Test Case Design</li>
+<li>B.2.1 Valid Input Tests</li>
+<li>B.2.2 Invalid Input Tests</li>
+<li>B.2.3 Performance Tests</li>
+<li>B.2.4 Regression Tests</li>
+<li>B.3 Debugging Techniques</li>
+<li>B.3.1 Tracing</li>
+<li>B.3.2 Visualization</li>
+<li>B.3.3 Step-by-Step Execution</li>
+<li>B.3.4 Simplified Test Cases</li>
+<li>B.3.5 Logging</li>
+<li>B.4 Testing Tools</li>
+<li>B.5 Continuous Integration</li>
+<li>Summary</li>
+</ul>
+<h2><a href="appendix_c_tinycl_reference.md">Appendix C: TinyCL Language Reference</a></h2>
+<ul>
+<li>C.1 Language Overview</li>
+<li>C.2 Complete Syntax Reference</li>
+<li>C.2.1 Program Structure</li>
+<li>C.2.2 Statements</li>
+<li>C.2.3 Complete Expression System</li>
+<li>C.2.4 Data Types and Literals</li>
+<li>C.2.5 Identifiers</li>
+<li>C.3 Standard Library</li>
+<li>C.4 Example Programs</li>
+<li>C.4.1 Hello, World!</li>
+<li>C.4.2 Factorial with Functions</li>
+<li>C.4.3 Fibonacci Sequence</li>
+<li>C.4.4 Array Processing</li>
+<li>C.5 Language Features Summary</li>
+<li>C.5.1 Implemented Features</li>
+<li>C.5.2 Current Limitations</li>
+<li>C.5.3 Possible Future Extensions</li>
+<li>Summary</li>
+</ul>
+</body>
+</html>

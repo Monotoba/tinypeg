@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Appendix B: Testing Framework</title>
+    <style>
+body { font-family: Arial, sans-serif; line-height: 1.6; max-width: 800px; margin: 0 auto; padding: 20px; }
+pre { background-color: #f5f5f5; padding: 10px; border-radius: 5px; overflow-x: auto; }
+code { font-family: monospace; }
+h1, h2, h3 { color: #333; }
+a { color: #0066cc; }
+    </style>
+</head>
+<body>
+<h1>Appendix B: Testing Framework</h1>
+<p>Testing is a crucial aspect of parser development. This appendix provides guidance on testing parsers built with the TinyPEG library.</p>
+<h2>B.1 Unit Testing Parsers</h2>
+<p>Unit testing involves testing individual components of your parser in isolation. For a parser built with TinyPEG, you should test:</p>
+<ol>
+<li><strong>Core Components</strong>: Test the basic building blocks like <code>Expression</code>, <code>Reference</code>, and <code>ParserContext</code>.</li>
+<li><strong>Grammar Rules</strong>: Test each grammar rule individually.</li>
+<li><strong>AST Construction</strong>: Test that the parser correctly builds the AST.</li>
+<li><strong>Error Handling</strong>: Test that the parser correctly handles invalid input.</li>
+</ol>
+<p>Here's an example of unit tests for the core components:</p>
+<p>```python</p>
+<h1>tests/test_core.py</h1>
+<p>import unittest
+from src.peg.core import Expression, Reference, ParserContext, ParseError</p>
+<p>class TestParserContext(unittest.TestCase):
+    def test_initialization(self):
+        ctx = ParserContext("test")
+        self.assertEqual(ctx.text, "test")
+        self.assertEqual(ctx.pos, 0)</p>
+<pre><code>def test_eof(self):
+    ctx = ParserContext("")
+    self.assertTrue(ctx.eof())
+
+    ctx = ParserContext("a")
+    self.assertFalse(ctx.eof())
+    ctx.pos = 1
+    self.assertTrue(ctx.eof())
+
+def test_peek(self):
+    ctx = ParserContext("abc")
+    self.assertEqual(ctx.peek(), "a")
+    ctx.pos = 1
+    self.assertEqual(ctx.peek(), "b")
+    ctx.pos = 3  # Beyond the end
+    self.assertIsNone(ctx.peek())
+
+def test_consume(self):
+    ctx = ParserContext("abc")
+    self.assertEqual(ctx.consume(), "a")
+    self.assertEqual(ctx.pos, 1)
+    self.assertEqual(ctx.consume(), "b")
+    self.assertEqual(ctx.pos, 2)
+    self.assertEqual(ctx.consume(), "c")
+    self.assertEqual(ctx.pos, 3)
+    self.assertIsNone(ctx.consume())  # Beyond the end
+    self.assertEqual(ctx.pos, 4)
+</code></pre>
+<p>class TestReference(unittest.TestCase):
+    def test_initialization(self):
+        ref = Reference("TestRule")
+        self.assertEqual(ref.name, "TestRule")</p>
+<pre><code>def test_parse_not_implemented(self):
+    ref = Reference("TestRule")
+    ctx = ParserContext("test")
+    with self.assertRaises(NotImplementedError):
+        ref.parse(ctx)
+</code></pre>
+<p>if <strong>name</strong> == "<strong>main</strong>":
+    unittest.main()
+```</p>
+<p>And here's an example of unit tests for a specific parser:</p>
+<p>```python</p>
+<h1>tests/test_calculator.py</h1>
+<p>import unittest
+from examples.peg_usage.calculators.advanced_calculator import AdvancedCalculator
+from src.peg.core import ParseError</p>
+<p>class TestCalculatorParser(unittest.TestCase):
+    def setUp(self):
+        self.parser = AdvancedCalculator()</p>
+<pre><code>def test_parse_number(self):
+    result = self.parser.parse("42")
+    self.assertIsNotNone(result)
+    # Test evaluation
+    value = self.parser.evaluate("42")
+    self.assertEqual(value, 42)
+
+def test_parse_expression(self):
+    result = self.parser.parse("2 + 3")
+    self.assertIsNotNone(result)
+    # Test evaluation
+    value = self.parser.evaluate("2 + 3")
+    self.assertEqual(value, 5)
+
+def test_parse_complex_expression(self):
+    result = self.parser.parse("2 * (3 + 4)")
+    self.assertIsNotNone(result)
+    # Test evaluation with proper precedence
+    value = self.parser.evaluate("2 * (3 + 4)")
+    self.assertEqual(value, 14)
+
+def test_parse_invalid_expression(self):
+    with self.assertRaises(ParseError):
+        self.parser.parse("2 +")
+
+def test_parse_empty_input(self):
+    with self.assertRaises(ParseError):
+        self.parser.parse("")
+
+def test_precedence(self):
+    # Test operator precedence
+    value = self.parser.evaluate("2 + 3 * 4")
+    self.assertEqual(value, 14)  # Should be 2 + (3 * 4) = 14, not (2 + 3) * 4 = 20
+</code></pre>
+<p>if <strong>name</strong> == "<strong>main</strong>":
+    unittest.main()
+```</p>
+<h2>B.2 Test Case Design</h2>
+<p>When designing test cases for parsers, consider the following categories:</p>
+<h3>B.2.1 Valid Input Tests</h3>
+<p>Test that the parser correctly handles valid input:</p>
+<ul>
+<li><strong>Simple Cases</strong>: Basic examples of valid input.</li>
+<li><strong>Complex Cases</strong>: More complex examples that exercise multiple grammar rules.</li>
+<li><strong>Edge Cases</strong>: Valid input that might be challenging to parse, such as deeply nested structures.</li>
+<li><strong>Boundary Cases</strong>: Input that is at the boundary of what's valid, such as the maximum allowed nesting level.</li>
+</ul>
+<h3>B.2.2 Invalid Input Tests</h3>
+<p>Test that the parser correctly handles invalid input:</p>
+<ul>
+<li><strong>Syntax Errors</strong>: Input with syntax errors, such as missing delimiters or invalid tokens.</li>
+<li><strong>Semantic Errors</strong>: Input that is syntactically valid but semantically invalid, such as undefined variables.</li>
+<li><strong>Malformed Input</strong>: Input that is malformed in various ways, such as unterminated strings or comments.</li>
+<li><strong>Empty Input</strong>: Test how the parser handles empty input.</li>
+</ul>
+<h3>B.2.3 Performance Tests</h3>
+<p>Test the parser's performance:</p>
+<ul>
+<li><strong>Large Input</strong>: Test with large input files to ensure the parser can handle them efficiently.</li>
+<li><strong>Pathological Cases</strong>: Test with input that might cause performance issues, such as deeply nested expressions.</li>
+<li><strong>Memory Usage</strong>: Monitor memory usage to ensure the parser doesn't use excessive memory.</li>
+</ul>
+<h3>B.2.4 Regression Tests</h3>
+<p>Create regression tests to ensure that bugs, once fixed, don't reappear:</p>
+<ul>
+<li><strong>Bug Fixes</strong>: For each bug you fix, add a test case that would have caught the bug.</li>
+<li><strong>Feature Additions</strong>: When adding new features, add tests to ensure they work correctly and don't break existing functionality.</li>
+<li><strong>Refactoring</strong>: After refactoring, run all tests to ensure you haven't introduced regressions.</li>
+</ul>
+<h2>B.3 Debugging Techniques</h2>
+<p>Debugging parsers can be challenging. Here are some techniques to help:</p>
+<h3>B.3.1 Tracing</h3>
+<p>Add tracing to your parser to see what it's doing:</p>
+<p><code>python
+def parse_expression(self, ctx):
+    print(f"Parsing expression at position {ctx.pos}: '{ctx.text[ctx.pos:ctx.pos+10]}...'")
+    # ... parsing logic ...
+    print(f"Expression result: {result}")
+    return result</code></p>
+<h3>B.3.2 Visualization</h3>
+<p>Visualize the parse tree or AST to understand what the parser is producing:</p>
+<p>```python
+def visualize_ast(ast, indent=0):
+    """Visualize an AST."""
+    if ast is None:
+        return</p>
+<pre><code>print(" " * indent + f"{type(ast).__name__}")
+
+if hasattr(ast, "value"):
+    print(" " * (indent + 2) + f"value: {ast.value}")
+
+if hasattr(ast, "name"):
+    print(" " * (indent + 2) + f"name: {ast.name}")
+
+if hasattr(ast, "op"):
+    print(" " * (indent + 2) + f"op: {ast.op}")
+
+if hasattr(ast, "left"):
+    print(" " * (indent + 2) + "left:")
+    visualize_ast(ast.left, indent + 4)
+
+if hasattr(ast, "right"):
+    print(" " * (indent + 2) + "right:")
+    visualize_ast(ast.right, indent + 4)
+
+if hasattr(ast, "statements"):
+    print(" " * (indent + 2) + "statements:")
+    for stmt in ast.statements:
+        visualize_ast(stmt, indent + 4)
+</code></pre>
+<p>```</p>
+<h3>B.3.3 Step-by-Step Execution</h3>
+<p>Use a debugger to step through the parsing process:</p>
+<ol>
+<li>Set a breakpoint at the start of the parsing function.</li>
+<li>Run the parser in debug mode.</li>
+<li>Step through the code to see what's happening.</li>
+<li>Inspect variables to understand the parser's state.</li>
+</ol>
+<h3>B.3.4 Simplified Test Cases</h3>
+<p>When debugging a complex issue, try to create a simplified test case that reproduces the issue:</p>
+<ol>
+<li>Start with the input that's causing the issue.</li>
+<li>Gradually simplify the input while still reproducing the issue.</li>
+<li>Once you have a minimal test case, it's often easier to understand and fix the issue.</li>
+</ol>
+<h3>B.3.5 Logging</h3>
+<p>Add logging to your parser to record its actions:</p>
+<p>```python
+import logging</p>
+<p>logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(<strong>name</strong>)</p>
+<p>def parse_expression(self, ctx):
+    logger.debug(f"Parsing expression at position {ctx.pos}")
+    # ... parsing logic ...
+    logger.debug(f"Expression result: {result}")
+    return result
+```</p>
+<h2>B.4 Testing Tools</h2>
+<p>Here are some tools that can help with testing parsers:</p>
+<h3>B.4.1 unittest</h3>
+<p>Python's built-in <code>unittest</code> framework is a good choice for unit testing parsers:</p>
+<p>```python
+import unittest</p>
+<p>class TestParser(unittest.TestCase):
+    def setUp(self):
+        self.parser = MyParser()</p>
+<pre><code>def test_parse_valid_input(self):
+    result = self.parser.parse("valid input")
+    self.assertIsNotNone(result)
+    # Add more specific assertions
+
+def test_parse_invalid_input(self):
+    with self.assertRaises(ParseError):
+        self.parser.parse("invalid input")
+</code></pre>
+<p>if <strong>name</strong> == "<strong>main</strong>":
+    unittest.main()
+```</p>
+<h3>B.4.2 pytest</h3>
+<p><code>pytest</code> is a more powerful testing framework that can simplify test writing:</p>
+<p>```python
+import pytest
+from my_parser import MyParser, ParseError</p>
+<p>@pytest.fixture
+def parser():
+    return MyParser()</p>
+<p>def test_parse_valid_input(parser):
+    result = parser.parse("valid input")
+    assert result is not None
+    # Add more specific assertions</p>
+<p>def test_parse_invalid_input(parser):
+    with pytest.raises(ParseError):
+        parser.parse("invalid input")
+```</p>
+<h3>B.4.3 Coverage.py</h3>
+<p><code>Coverage.py</code> is a tool for measuring code coverage of Python programs:</p>
+<p><code>bash
+pip install coverage
+coverage run -m unittest discover
+coverage report
+coverage html  # Generate HTML report</code></p>
+<h3>B.4.4 Hypothesis</h3>
+<p><code>Hypothesis</code> is a property-based testing library that can generate test cases for you:</p>
+<p>```python
+import hypothesis
+from hypothesis import given
+from hypothesis.strategies import text
+from my_parser import MyParser, ParseError</p>
+<p>@given(text())
+def test_parser_handles_arbitrary_input(s):
+    parser = MyParser()
+    try:
+        result = parser.parse(s)
+        # If parsing succeeds, make assertions about the result
+        assert result is not None
+    except ParseError:
+        # If parsing fails, that's fine too
+        pass
+```</p>
+<h2>B.5 Continuous Integration</h2>
+<p>Set up continuous integration (CI) to automatically run your tests:</p>
+<h3>B.5.1 GitHub Actions</h3>
+<p>```yaml</p>
+<h1>.github/workflows/test.yml</h1>
+<p>name: Test</p>
+<p>on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]</p>
+<p>jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.x'
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    - name: Run tests
+      run: |
+        python -m unittest discover
+```</p>
+<h3>B.5.2 Travis CI</h3>
+<p>```yaml</p>
+<h1>.travis.yml</h1>
+<p>language: python
+python:
+  - "3.6"
+  - "3.7"
+  - "3.8"
+  - "3.9"
+install:
+  - pip install -r requirements.txt
+script:
+  - python -m unittest discover
+```</p>
+<h2>Summary</h2>
+<p>Testing is an essential part of parser development. By thoroughly testing your parsers, you can ensure they correctly handle both valid and invalid input, perform well, and don't regress when you make changes.</p>
+<p>In this appendix, we've covered unit testing, test case design, debugging techniques, testing tools, and continuous integration. These practices will help you build robust and reliable parsers with the TinyPEG library.</p>
+</body>
+</html>

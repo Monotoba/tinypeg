@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Appendix C: TinyCL (Tiny C-Like Language) Reference</title>
+    <style>
+body { font-family: Arial, sans-serif; line-height: 1.6; max-width: 800px; margin: 0 auto; padding: 20px; }
+pre { background-color: #f5f5f5; padding: 10px; border-radius: 5px; overflow-x: auto; }
+code { font-family: monospace; }
+h1, h2, h3 { color: #333; }
+a { color: #0066cc; }
+    </style>
+</head>
+<body>
+<h1>Appendix C: TinyCL (Tiny C-Like Language) Reference</h1>
+<p>This appendix provides a comprehensive reference for the TinyCL language, including its complete syntax, semantics, built-in features, and example programs.</p>
+<h2>C.1 Language Overview</h2>
+<p>TinyCL (Tiny C-Like Language) is a modern, fully-featured programming language that demonstrates advanced language implementation techniques. It includes:</p>
+<ul>
+<li><strong>Variables and Constants</strong>: <code>var</code> and <code>const</code> declarations</li>
+<li><strong>Functions</strong>: User-defined functions with parameters and return values</li>
+<li><strong>Arrays</strong>: Dynamic arrays with indexing</li>
+<li><strong>Full Expression System</strong>: Arithmetic, logical, and comparison operators with proper precedence</li>
+<li><strong>Control Flow</strong>: If-else statements and while loops</li>
+<li><strong>Data Types</strong>: Numbers, strings, characters, booleans, and arrays</li>
+<li><strong>Comments</strong>: Single-line comments with <code>#</code></li>
+</ul>
+<h2>C.2 Complete Syntax Reference</h2>
+<h3>C.2.1 Program Structure</h3>
+<p>A TinyCL program consists of a sequence of statements:</p>
+<p><code>ebnf
+Program ::= Statements
+Statements ::= Statement*</code></p>
+<h3>C.2.2 Statements</h3>
+<p>TinyCL supports the following types of statements:</p>
+<p><code>ebnf
+Statement ::= FunctionDecl | VariableDecl | ConstantDecl | IfStatement
+           | WhileStatement | PrintStatement | ReturnStatement
+           | AssignmentStatement | ExpressionStatement | Block | Comment</code></p>
+<h4>Variable Declaration</h4>
+<p>A variable declaration creates a new variable and initializes it:</p>
+<p><code>ebnf
+VariableDecl ::= "var" Identifier "=" Expression ";"</code></p>
+<p>Example:
+<code>var x = 42;
+var name = "Alice";
+var numbers = [1, 2, 3];</code></p>
+<h4>Constant Declaration</h4>
+<p>A constant declaration creates an immutable value:</p>
+<p><code>ebnf
+ConstantDecl ::= "const" Identifier "=" Expression ";"</code></p>
+<p>Example:
+<code>const PI = 3;
+const MAX_SIZE = 100;</code></p>
+<h4>Function Declaration</h4>
+<p>A function declaration defines a reusable block of code:</p>
+<p><code>ebnf
+FunctionDecl ::= "func" Identifier "(" Parameters? ")" Block
+Parameters ::= Identifier ("," Identifier)*</code></p>
+<p>Example:
+```
+func add(a, b) {
+    return a + b;
+}</p>
+<p>func factorial(n) {
+    if (n &lt;= 1) {
+        return 1;
+    } else {
+        return n * factorial(n - 1);
+    }
+}
+```</p>
+<h4>Assignment Statement</h4>
+<p>An assignment statement assigns a new value to an existing variable:</p>
+<p><code>ebnf
+AssignmentStatement ::= Identifier "=" Expression ";"</code></p>
+<p>Example:
+<code>x = 42;
+name = "Bob";
+numbers[0] = 10;</code></p>
+<h4>If Statement</h4>
+<p>An if statement conditionally executes code based on a condition:</p>
+<p><code>ebnf
+IfStatement ::= "if" "(" Expression ")" Block ("else" Block)?</code></p>
+<p>Example:
+```
+if (x &gt; 0) {
+    print("Positive");
+} else {
+    print("Non-positive");
+}</p>
+<p>if (x &gt; 0 &amp;&amp; x &lt; 10) {
+    print("Single digit positive");
+}
+```</p>
+<h4>While Statement</h4>
+<p>A while statement repeatedly executes code as long as a condition is true:</p>
+<p><code>ebnf
+WhileStatement ::= "while" "(" Expression ")" Block</code></p>
+<p>Example:
+<code>while (x &gt; 0) {
+    print(x);
+    x = x - 1;
+}</code></p>
+<h4>Print Statement</h4>
+<p>A print statement outputs a value:</p>
+<p><code>ebnf
+PrintStatement ::= "print" "(" Expression ")" ";"</code></p>
+<p>Example:
+<code>print("Hello, world!");
+print(42);
+print("Result: " + result);</code></p>
+<h4>Return Statement</h4>
+<p>A return statement exits a function and optionally returns a value:</p>
+<p><code>ebnf
+ReturnStatement ::= "return" Expression? ";"</code></p>
+<p>Example:
+<code>return 42;
+return x + y;
+return;  # Return without a value</code></p>
+<h4>Block</h4>
+<p>A block groups multiple statements together:</p>
+<p><code>ebnf
+Block ::= "{" Statements? "}"</code></p>
+<p>Example:
+<code>{
+    var x = 1;
+    var y = 2;
+    print(x + y);
+}</code></p>
+<h4>Comment</h4>
+<p>A comment is a line of text that is ignored by the parser:</p>
+<p><code>ebnf
+Comment ::= "#" [^\n]*</code></p>
+<p>Example:
+```</p>
+<h1>This is a comment</h1>
+<p>```</p>
+<h3>C.2.3 Complete Expression System</h3>
+<p>TinyCL has a comprehensive expression system with proper operator precedence:</p>
+<p><code>ebnf
+Expression    ::= LogicalOr
+LogicalOr     ::= LogicalAnd ( "||" LogicalAnd )*
+LogicalAnd    ::= Equality ( "&amp;&amp;" Equality )*
+Equality      ::= Comparison ( ( "!=" | "==" ) Comparison )*
+Comparison    ::= Term ( ( "&lt;=" | "&gt;=" | "&lt;" | "&gt;" ) Term )*
+Term          ::= Factor ( ( "+" | "-" ) Factor )*
+Factor        ::= Unary ( ( "*" | "/" ) Unary )*
+Unary         ::= ( "!" | "-" )? Postfix
+Postfix       ::= Primary ( "[" Expression "]" )*
+Primary       ::= "(" Expression ")"
+               | Identifier "(" Arguments? ")"
+               | "[" Arguments? "]"
+               | Identifier
+               | Number | String | Character
+               | "true" | "false"</code></p>
+<h4>Arithmetic Operators</h4>
+<p><code>2 + 3 * 4      # Result: 14 (proper precedence)
+(2 + 3) * 4    # Result: 20 (parentheses override precedence)
+10 / 2 - 1     # Result: 4</code></p>
+<h4>Logical Operators</h4>
+<p><code>true &amp;&amp; false   # Result: false
+true || false   # Result: true
+!true          # Result: false
+x &gt; 0 &amp;&amp; x &lt; 10 # Compound condition</code></p>
+<h4>Comparison Operators</h4>
+<p><code>x == 42        # Equal to
+x != 0         # Not equal to
+x &lt; 10         # Less than
+x &gt; 5          # Greater than
+x &lt;= 100       # Less than or equal to
+x &gt;= 1         # Greater than or equal to</code></p>
+<h4>Array Operations</h4>
+<p><code>var arr = [1, 2, 3];    # Array literal
+var first = arr[0];     # Array access
+arr[1] = 42;           # Array assignment
+var mixed = [1, "hello", true];  # Mixed types</code></p>
+<h4>Function Calls</h4>
+<p><code>var result = add(10, 20);
+var fact = factorial(5);
+print("Hello");</code></p>
+<h3>C.2.4 Data Types and Literals</h3>
+<p>TinyCL supports multiple data types:</p>
+<h4>Numbers</h4>
+<p><code>ebnf
+Number ::= [0-9]+</code>
+Example: <code>42</code>, <code>0</code>, <code>123</code></p>
+<h4>Strings</h4>
+<p><code>ebnf
+String ::= '"' StringChar* '"'
+StringChar ::= [printable characters] | EscapeSequence
+EscapeSequence ::= '\' ('"' | '\' | 'n' | 'r' | 't' | '0' | 'b' | 'f' | 'v' | 'l')</code>
+Example: <code>"Hello, world!"</code>, <code>"Line 1\nLine 2"</code>, <code>"Quote: \"Hello\""</code></p>
+<h4>Characters</h4>
+<p><code>ebnf
+Character ::= "'" CharChar "'"
+CharChar ::= [printable character] | EscapeSequence</code>
+Example: <code>'A'</code>, <code>'1'</code>, <code>'\n'</code></p>
+<h4>Booleans</h4>
+<p><code>true
+false</code></p>
+<h4>Arrays</h4>
+<p><code>[1, 2, 3]
+["hello", "world"]
+[1, "mixed", true]
+[]  # Empty array</code></p>
+<h3>C.2.5 Identifiers</h3>
+<p>Identifiers are used for variable, constant, and function names:</p>
+<p><code>ebnf
+Identifier ::= [a-zA-Z_][a-zA-Z0-9_]*</code></p>
+<p>Example:
+<code>x
+counter
+first_name
+calculateTotal
+MAX_SIZE</code></p>
+<h2>C.3 Standard Library</h2>
+<p>TinyCL has a minimal standard library with the following built-in functionality:</p>
+<h3>C.3.1 Input/Output</h3>
+<ul>
+<li><code>print(expression)</code>: Print the value of an expression.</li>
+</ul>
+<p>Example:
+<code>print("Hello, world!");
+print(42);
+print("The answer is " + 42);</code></p>
+<h3>C.3.2 Arithmetic Operations</h3>
+<p>TinyCL supports the following arithmetic operations:</p>
+<ul>
+<li>Addition: <code>a + b</code></li>
+<li>Subtraction: <code>a - b</code></li>
+<li>Multiplication: <code>a * b</code></li>
+<li>Division: <code>a / b</code></li>
+</ul>
+<p>Example:
+<code>let x = 2 + 3;  # x = 5
+let y = x * 4;  # y = 20
+let z = y / 2;  # z = 10
+let w = z - 1;  # w = 9</code></p>
+<h3>C.3.3 String Operations</h3>
+<p>TinyCL supports string concatenation using the <code>+</code> operator:</p>
+<p>Example:
+<code>let name = "Alice";
+let greeting = "Hello, " + name + "!";  # greeting = "Hello, Alice!"</code></p>
+<h3>C.3.4 Comparison Operations</h3>
+<p>TinyCL supports the following comparison operations:</p>
+<ul>
+<li>Equal to: <code>a == b</code></li>
+<li>Not equal to: <code>a != b</code></li>
+<li>Less than: <code>a &lt; b</code></li>
+<li>Greater than: <code>a &gt; b</code></li>
+<li>Less than or equal to: <code>a &lt;= b</code></li>
+<li>Greater than or equal to: <code>a &gt;= b</code></li>
+</ul>
+<p>Example:
+```
+if (x == 42) {
+    print("x is 42");
+}</p>
+<p>if (y != 0) {
+    print("y is not 0");
+}</p>
+<p>if (z &lt; 10) {
+    print("z is less than 10");
+}
+```</p>
+<h2>C.4 Example Programs</h2>
+<p>Here are some example TinyCL programs to demonstrate the language's features:</p>
+<h3>C.4.1 Hello, World!</h3>
+<p>```</p>
+<h1>Hello, World! program</h1>
+<p>print("Hello, World!");
+```</p>
+<h3>C.4.2 Factorial with Functions</h3>
+<p>```</p>
+<h1>Calculate factorial using recursion</h1>
+<p>func factorial(n) {
+    if (n &lt;= 1) {
+        return 1;
+    } else {
+        return n * factorial(n - 1);
+    }
+}</p>
+<p>var n = 5;
+var result = factorial(n);
+print("Factorial of " + n + " is " + result);
+```</p>
+<h3>C.4.3 Fibonacci Sequence</h3>
+<p>```</p>
+<h1>Calculate Fibonacci numbers</h1>
+<p>var n = 10;
+var a = 0;
+var b = 1;
+var i = 0;</p>
+<p>print("Fibonacci sequence:");
+print(a);
+print(b);</p>
+<p>while (i &lt; n - 2) {
+    var c = a + b;
+    print(c);
+    a = b;
+    b = c;
+    i = i + 1;
+}
+```</p>
+<h3>C.4.4 Array Processing</h3>
+<p>```</p>
+<h1>Working with arrays</h1>
+<p>var numbers = [5, 2, 8, 1, 9];
+var sum = 0;
+var i = 0;</p>
+<h1>Calculate sum</h1>
+<p>while (i &lt; 5) {
+    sum = sum + numbers[i];
+    i = i + 1;
+}</p>
+<p>print("Sum: " + sum);</p>
+<h1>Find maximum</h1>
+<p>var max = numbers[0];
+i = 1;
+while (i &lt; 5) {
+    if (numbers[i] &gt; max) {
+        max = numbers[i];
+    }
+    i = i + 1;
+}</p>
+<p>print("Maximum: " + max);
+```</p>
+<h3>C.4.5 FizzBuzz</h3>
+<p>```</p>
+<h1>FizzBuzz program</h1>
+<p>let i = 1;</p>
+<p>while (i &lt;= 100) {
+    if (i % 15 == 0) {
+        print("FizzBuzz");
+    } else {
+        if (i % 3 == 0) {
+            print("Fizz");
+        } else {
+            if (i % 5 == 0) {
+                print("Buzz");
+            } else {
+                print(i);
+            }
+        }
+    }
+    i = i + 1;
+}
+```</p>
+<h3>C.4.6 Prime Numbers</h3>
+<p>```</p>
+<h1>Print prime numbers up to n</h1>
+<p>let n = 100;
+let i = 2;</p>
+<p>while (i &lt;= n) {
+    let is_prime = 1;
+    let j = 2;</p>
+<pre><code>while (j &lt; i) {
+    if (i % j == 0) {
+        is_prime = 0;
+    }
+    j = j + 1;
+}
+
+if (is_prime == 1) {
+    print(i);
+}
+
+i = i + 1;
+</code></pre>
+<p>}
+```</p>
+<h2>C.5 Language Features Summary</h2>
+<p>TinyCL is a comprehensive programming language with the following implemented features:</p>
+<h3>✅ <strong>Implemented Features</strong></h3>
+<ol>
+<li><strong>Complete Data Types</strong>: Numbers, strings, characters, booleans, and arrays</li>
+<li><strong>User-Defined Functions</strong>: Function declarations with parameters and return values</li>
+<li><strong>Arrays and Indexing</strong>: Dynamic arrays with element access and assignment</li>
+<li><strong>Full Expression System</strong>: Arithmetic, logical, and comparison operators with proper precedence</li>
+<li><strong>Control Flow</strong>: If-else statements and while loops</li>
+<li><strong>Variable Management</strong>: Variable and constant declarations</li>
+<li><strong>Comments</strong>: Single-line comments with <code>#</code></li>
+<li><strong>Built-in I/O</strong>: Print statement for output</li>
+</ol>
+<h3>📋 <strong>Current Limitations</strong></h3>
+<ol>
+<li><strong>Limited I/O</strong>: Only supports output via <code>print</code> statement (no input capabilities)</li>
+<li><strong>No Exception Handling</strong>: No try-catch blocks or error handling mechanisms</li>
+<li><strong>No Modules</strong>: No support for importing code from other files</li>
+<li><strong>Integer-Only Numbers</strong>: No floating-point number support</li>
+<li><strong>Minimal Standard Library</strong>: Only basic built-in functions</li>
+</ol>
+<h3>🚀 <strong>Possible Future Extensions</strong></h3>
+<ol>
+<li><strong>Floating-Point Numbers</strong>: Add support for decimal numbers</li>
+<li><strong>Input Functions</strong>: Add <code>input()</code> or <code>read()</code> functions</li>
+<li><strong>Exception Handling</strong>: Add try-catch blocks for error handling</li>
+<li><strong>Module System</strong>: Add <code>import</code> statements for code reuse</li>
+<li><strong>Object-Oriented Features</strong>: Add classes and objects</li>
+<li><strong>Standard Library</strong>: Expand with string manipulation, math functions, etc.</li>
+<li><strong>File I/O</strong>: Add file reading and writing capabilities</li>
+</ol>
+<p>Despite the current limitations, TinyCL is a fully functional programming language capable of expressing complex algorithms and computations.</p>
+<h2>Summary</h2>
+<p>TinyCL is a simple but complete programming language with variables, control structures, and basic I/O. Its syntax is inspired by popular programming languages like JavaScript and Python, making it easy to learn and use.</p>
+<p>This appendix has provided a comprehensive reference for TinyCL, including its syntax, semantics, standard library, and example programs. With this information, you should be able to write and understand TinyCL programs.</p>
+</body>
+</html>

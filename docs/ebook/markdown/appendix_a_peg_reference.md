@@ -1,101 +1,195 @@
-# Appendix A: PEG Grammar Reference
+# Appendix A: TinyPEG Library Reference
 
-## A.1 PEG Syntax and Semantics
+## A.1 TinyPEG Implementation Overview
 
-Parsing Expression Grammars (PEGs) have a specific syntax and semantics that differ from other grammar formalisms like Context-Free Grammars (CFGs). This appendix provides a comprehensive reference for PEG syntax and semantics.
+This appendix provides a comprehensive reference for our TinyPEG library implementation. Unlike traditional PEG notation, our library uses Python classes to represent parsing expressions, providing a programmatic approach to grammar definition.
 
-### A.1.1 Basic Syntax
+### A.1.1 Core Architecture
 
-A PEG consists of a set of rules, each with a name and a parsing expression:
+Our TinyPEG library consists of three main modules:
 
+- **core.py**: Fundamental classes (`Expression`, `Reference`, `ParserContext`, `ParseError`, `Rule`, `GrammarNode`)
+- **parsers.py**: Complete PEG expression implementations and the main `PEGParser` class
+- **syntax_tree.py**: Grammar representation and visitor pattern support
+
+### A.1.2 Grammar Definition
+
+In our implementation, grammars are defined using Python classes rather than traditional PEG notation:
+
+```python
+from src.peg import Rule, GrammarNode, Literal, Reference
+
+# Define a grammar using Python classes
+grammar = GrammarNode(
+    name="MyGrammar",
+    rules=[
+        Rule("Start", Reference("Expression")),
+        Rule("Expression", Literal("hello"))
+    ]
+)
 ```
-RuleName ← ParsingExpression
+
+### A.1.3 TinyPEG Expression Classes
+
+Our library implements PEG expressions as Python classes:
+
+| Class | Description | Usage Example |
+|-------|-------------|---------------|
+| `Literal` | Match a literal string | `Literal("while")` |
+| `Regex` | Match a regular expression pattern | `Regex("[0-9]+")` |
+| `Sequence` | Match expressions in order | `Sequence(Literal("if"), Reference("Condition"))` |
+| `Choice` | Try alternatives in order | `Choice(Reference("IfStmt"), Reference("WhileStmt"))` |
+| `ZeroOrMore` | Match zero or more times | `ZeroOrMore(Reference("Statement"))` |
+| `OneOrMore` | Match one or more times | `OneOrMore(Regex("[0-9]"))` |
+| `Optional` | Match optionally | `Optional(Sequence(Literal("else"), Reference("Block")))` |
+| `AndPredicate` | Positive lookahead (don't consume) | `AndPredicate(Regex("[a-z]"))` |
+| `NotPredicate` | Negative lookahead (don't consume) | `NotPredicate(Regex("[0-9]"))` |
+| `Reference` | Reference to another rule | `Reference("Expression")` |
+
+### A.1.4 Complete Example
+
+Here's a complete example showing how to define and use a grammar:
+
+```python
+from src.peg import (
+    PEGParser, Rule, GrammarNode, Reference,
+    Sequence, Choice, ZeroOrMore, Literal, Regex
+)
+
+# Define a simple arithmetic grammar
+grammar = GrammarNode(
+    name="Arithmetic",
+    rules=[
+        Rule("Expression", Sequence(
+            Reference("Term"),
+            ZeroOrMore(Sequence(
+                Choice(Literal("+"), Literal("-")),
+                Reference("Term")
+            ))
+        )),
+        Rule("Term", Sequence(
+            Reference("Factor"),
+            ZeroOrMore(Sequence(
+                Choice(Literal("*"), Literal("/")),
+                Reference("Factor")
+            ))
+        )),
+        Rule("Factor", Choice(
+            Reference("Number"),
+            Sequence(Literal("("), Reference("Expression"), Literal(")"))
+        )),
+        Rule("Number", Regex("[0-9]+"))
+    ]
+)
+
+# Create and use the parser
+parser = PEGParser()
+parser.grammar = grammar
+
+result = parser.parse("2 + 3 * 4")
+print(result)  # Parses successfully
 ```
 
-In many implementations, including our TinyPEG library, the arrow (`←`) is replaced with an equals sign (`=`) or another symbol.
+### A.1.5 TinyPEG Semantics
 
-### A.1.2 Parsing Expressions
+Our TinyPEG implementation follows standard PEG semantics:
 
-PEGs support the following types of parsing expressions:
+1. **Ordered Choice**: The `Choice` class tries alternatives in order, selecting the first successful match
+2. **Unlimited Lookahead**: Predicates (`AndPredicate`, `NotPredicate`) can look ahead without consuming input
+3. **Memoization**: Our parser includes basic memoization to improve performance
+4. **Automatic Whitespace Handling**: The parser automatically skips whitespace between tokens
 
-| Expression | Description | Example |
-|------------|-------------|---------|
-| `"literal"` | Match a literal string | `"while"` |
-| `[a-z]` | Match a character class | `[0-9]` |
-| `e1 e2` | Match e1 followed by e2 | `"if" Condition` |
-| `e1 / e2` | Try to match e1; if it fails, try e2 | `IfStmt / WhileStmt` |
-| `e*` | Match e zero or more times | `Statement*` |
-| `e+` | Match e one or more times | `Digit+` |
-| `e?` | Match e or nothing | `"else" Block?` |
-| `&e` | Succeed if e matches but don't consume input | `&[a-z]` |
-| `!e` | Succeed if e doesn't match and don't consume input | `![0-9]` |
-| `(e)` | Group expressions | `("+" / "-") Term` |
-| `NonTerminal` | Match the rule with this name | `Expression` |
-| `.` | Match any character | `.` |
+## A.2 Common TinyPEG Patterns
 
-### A.1.3 Semantics
-
-The key semantic difference between PEGs and CFGs is that PEGs are unambiguous due to the ordered choice operator (`/`). When multiple alternatives could match, a PEG parser will always choose the first matching alternative.
-
-For example, in the expression `A / B`, the parser will first try to match `A`. Only if `A` fails will it try to match `B`. This is in contrast to CFGs, where both `A` and `B` would be considered equally valid alternatives.
-
-Another important aspect of PEG semantics is that they use unlimited lookahead. This means that a PEG parser can look ahead in the input as far as necessary to determine whether a rule matches.
-
-## A.2 Common PEG Patterns
-
-Here are some common patterns used in PEGs:
+Here are common patterns implemented using our library:
 
 ### A.2.1 Whitespace Handling
 
-```
-# Skip whitespace between tokens
-Spacing ← [ \t\n\r]*
-
-# A token followed by optional whitespace
-keyword ← "keyword" Spacing
+```python
+# Our parser automatically handles whitespace, but you can control it:
+class MyParser(PEGParser):
+    def skip_whitespace(self, ctx):
+        """Custom whitespace handling."""
+        while not ctx.eof() and ctx.peek() in " \t\n\r":
+            ctx.consume()
 ```
 
 ### A.2.2 Identifiers
 
-```
+```python
 # Match an identifier (letters, digits, underscore)
-Identifier ← [a-zA-Z_][a-zA-Z0-9_]* Spacing
+Rule("Identifier", Regex("[a-zA-Z_][a-zA-Z0-9_]*"))
 ```
 
 ### A.2.3 Numbers
 
-```
+```python
 # Match an integer
-Integer ← [0-9]+ Spacing
+Rule("Integer", Regex("[0-9]+"))
 
 # Match a floating-point number
-Float ← [0-9]+ "." [0-9]+ Spacing
+Rule("Float", Regex("[0-9]+\\.[0-9]+"))
 ```
 
 ### A.2.4 Strings
 
-```
+```python
 # Match a double-quoted string
-String ← "\"" (!("\"") .)* "\"" Spacing
+Rule("String", Regex("\"[^\"]*\""))
+
+# More complex string with escape sequences
+Rule("String", Sequence(
+    Literal("\""),
+    ZeroOrMore(Choice(
+        Regex("[^\"\\\\]"),  # Normal characters
+        Sequence(Literal("\\"), Regex("."))  # Escape sequences
+    )),
+    Literal("\"")
+))
 ```
 
 ### A.2.5 Comments
 
-```
+```python
 # Match a single-line comment
-Comment ← "#" (!"\n" .)* "\n"
+Rule("Comment", Regex("#[^\n]*"))
 
 # Match a multi-line comment
-MultiLineComment ← "/*" (!"*/" .)* "*/"
+Rule("MultiLineComment", Sequence(
+    Literal("/*"),
+    ZeroOrMore(Sequence(
+        NotPredicate(Literal("*/")),
+        Regex(".")
+    )),
+    Literal("*/")
+))
 ```
 
 ### A.2.6 Expressions with Precedence
 
-```
-# Expression with precedence levels
-Expression ← Term (("+"/"-") Term)*
-Term ← Factor (("*"/"/") Factor)*
-Factor ← Number / "(" Expression ")"
+```python
+# Expression with proper precedence levels
+rules = [
+    Rule("Expression", Sequence(
+        Reference("Term"),
+        ZeroOrMore(Sequence(
+            Choice(Literal("+"), Literal("-")),
+            Reference("Term")
+        ))
+    )),
+    Rule("Term", Sequence(
+        Reference("Factor"),
+        ZeroOrMore(Sequence(
+            Choice(Literal("*"), Literal("/")),
+            Reference("Factor")
+        ))
+    )),
+    Rule("Factor", Choice(
+        Reference("Number"),
+        Sequence(Literal("("), Reference("Expression"), Literal(")"))
+    )),
+    Rule("Number", Regex("[0-9]+"))
+]
 ```
 
 ## A.3 Comparison with Regular Expressions
@@ -146,53 +240,171 @@ Many regular expressions can be directly translated to PEGs:
 
 However, some regular expression features, like backreferences, don't have direct equivalents in PEGs.
 
-## A.4 PEG Implementation Considerations
+## A.4 TinyPEG Implementation Details
 
-When implementing a PEG parser, there are several important considerations:
+Our TinyPEG library addresses several important implementation considerations:
 
-### A.4.1 Memoization (Packrat Parsing)
+### A.4.1 Memoization
 
-Without memoization, a naive PEG parser can have exponential time complexity in the worst case. Packrat parsing, which memoizes the results of parsing functions, ensures linear time complexity at the cost of increased memory usage.
+Our `PEGParser` class includes basic memoization to prevent exponential time complexity:
 
-### A.4.2 Left Recursion
+```python
+class PEGParser:
+    def __init__(self):
+        self.rule_cache = {}  # Memoization cache
 
-PEGs don't naturally support left recursion. For example, the following rule would cause infinite recursion:
+    def _parse_rule(self, rule, ctx):
+        # Check cache first
+        cache_key = (rule.name, ctx.pos)
+        if cache_key in self.rule_cache:
+            result, new_pos = self.rule_cache[cache_key]
+            ctx.pos = new_pos
+            return result
 
+        # Parse and cache result
+        result = self._parse_expression(rule.expr, ctx)
+        self.rule_cache[cache_key] = (result, ctx.pos)
+        return result
 ```
-Expr ← Expr "+" Term / Term
-```
 
-There are several approaches to handling left recursion in PEGs:
-- Rewriting the grammar to eliminate left recursion
-- Using special algorithms to detect and handle left recursion
-- Using operator precedence parsing for expressions
+### A.4.2 Left Recursion Handling
+
+Our library handles left recursion by rewriting grammars to use right recursion with repetition:
+
+```python
+# Instead of left recursion, use this right-recursive pattern:
+Rule("Expression", Sequence(
+    Reference("Term"),
+    ZeroOrMore(Sequence(Literal("+"), Reference("Term")))
+))
+```
 
 ### A.4.3 Error Reporting
 
-PEG parsers can struggle with providing good error messages because they try alternatives silently. To improve error reporting, you can:
-- Track the furthest position reached during parsing
-- Annotate rules with error messages
-- Use a separate error recovery mechanism
+Our parser provides detailed error messages with position information:
 
-### A.4.4 Semantic Actions
+```python
+try:
+    result = parser.parse("invalid input")
+except ParseError as e:
+    print(f"Parse error: {e}")
+    # Output: Parse error: Expected pattern '[0-9]+', got 'invalid...'
+```
 
-To build an AST or perform other actions during parsing, you can attach semantic actions to rules. In our TinyPEG library, we do this by having parsing functions return AST nodes.
+### A.4.4 AST Building
 
-## A.5 PEG Tools and Libraries
+Our library supports AST building through custom parser classes:
 
-There are many tools and libraries for working with PEGs:
+```python
+class MyParser(PEGParser):
+    def parse(self, text):
+        result = super().parse(text)
+        return self._build_ast(result)
 
-- **PEG.js**: A JavaScript parser generator based on PEGs
-- **ANTLR4**: Supports PEG-like syntax with some extensions
-- **Parsec**: A parser combinator library for Haskell that can express PEGs
-- **Parboiled**: A PEG parser generator for Java and Scala
-- **TatSu**: A PEG parser generator for Python
-- **Pest**: A PEG parser generator for Rust
+    def _build_ast(self, parse_result):
+        # Convert parse result to AST nodes
+        return MyASTNode(parse_result)
+```
 
-Each of these tools has its own syntax and features, but they all implement the core concepts of PEGs.
+### A.4.5 Whitespace Handling
+
+Automatic whitespace handling is built into our parser:
+
+```python
+class PEGParser:
+    def _parse_rule(self, rule, ctx):
+        ctx.skip_whitespace()  # Skip whitespace before parsing
+        result = self._parse_expression(rule.expr, ctx)
+        return result
+```
+
+## A.5 TinyPEG vs Other PEG Libraries
+
+Our TinyPEG library compared to other PEG tools:
+
+| Feature | TinyPEG | PEG.js | TatSu | Parsec |
+|---------|---------|--------|-------|--------|
+| **Language** | Python | JavaScript | Python | Haskell |
+| **Approach** | Class-based | Grammar files | Grammar files | Combinator |
+| **Memoization** | Basic | Full packrat | Optional | Manual |
+| **Error Messages** | Position-based | Good | Excellent | Good |
+| **AST Building** | Manual | Automatic | Automatic | Manual |
+| **Learning Curve** | Low | Medium | Medium | High |
+
+### A.5.1 TinyPEG Advantages
+
+- **Programmatic**: Define grammars using Python classes
+- **Lightweight**: Minimal dependencies, easy to embed
+- **Extensible**: Easy to customize parsing behavior
+- **Educational**: Clear, readable implementation
+
+### A.5.2 When to Use TinyPEG
+
+TinyPEG is ideal for:
+- Learning PEG concepts and implementation
+- Building domain-specific languages
+- Prototyping parsers quickly
+- Educational projects and tutorials
+- Small to medium parsing tasks
+
+## A.6 Complete API Reference
+
+### A.6.1 Core Classes
+
+```python
+# Import all classes
+from src.peg import (
+    PEGParser,           # Main parser class
+    Rule,                # Grammar rule definition
+    GrammarNode,         # Grammar container
+    Reference,           # Rule reference
+    Sequence,            # Sequential matching
+    Choice,              # Alternative matching
+    ZeroOrMore,          # Zero or more repetition
+    OneOrMore,           # One or more repetition
+    Optional,            # Optional matching
+    AndPredicate,        # Positive lookahead
+    NotPredicate,        # Negative lookahead
+    Literal,             # Exact string matching
+    Regex,               # Pattern matching
+    ParseError,          # Parsing exceptions
+    ParserContext        # Parsing state
+)
+```
+
+### A.6.2 Usage Pattern
+
+```python
+# 1. Define grammar
+grammar = GrammarNode(
+    name="MyGrammar",
+    rules=[
+        Rule("Start", Reference("Expression")),
+        # ... more rules
+    ]
+)
+
+# 2. Create parser
+parser = PEGParser()
+parser.grammar = grammar
+
+# 3. Parse input
+try:
+    result = parser.parse("input text")
+    print("Success:", result)
+except ParseError as e:
+    print("Error:", e)
+```
 
 ## Summary
 
-PEGs provide a powerful and flexible formalism for defining parsers. They combine the expressiveness of context-free grammars with the predictability of recursive descent parsing, making them well-suited for many parsing tasks.
+TinyPEG provides a clean, educational implementation of Parsing Expression Grammars in Python. Unlike traditional PEG tools that use grammar files, TinyPEG uses Python classes to define grammars programmatically, making it ideal for learning, prototyping, and building domain-specific languages.
 
-In this appendix, we've covered the syntax and semantics of PEGs, common patterns, comparisons with regular expressions, implementation considerations, and available tools. This information should help you effectively use PEGs in your own projects.
+Key features of our implementation:
+- **Class-based grammar definition** for maximum flexibility
+- **Automatic whitespace handling** for convenience
+- **Basic memoization** for performance
+- **Clear error reporting** with position information
+- **Extensible architecture** for custom parsing behavior
+
+This appendix has covered the complete TinyPEG API, common patterns, implementation details, and usage examples. With this information, you should be able to effectively use TinyPEG for your parsing projects.

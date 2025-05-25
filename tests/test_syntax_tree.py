@@ -17,6 +17,10 @@ class MockVisitor:
     
     def visit_rule(self, rule):
         self.visited_rules.append(rule)
+        
+    # Add alias for compatibility with the new naming convention
+    def visit_GrammarNode(self, grammar):
+        return self.visit_grammar(grammar)
 
 class TestGrammarNode(unittest.TestCase):
     def test_initialization(self):
@@ -42,13 +46,14 @@ class TestDebugVisitor(unittest.TestCase):
         # since it just prints to stdout
         visitor = DebugVisitor()
         grammar = GrammarNode("TestGrammar", [])
-        visitor.visit_grammar(grammar)
+        # Use the method that exists in the DebugVisitor class
+        visitor.visit_GrammarNode(grammar)
         # No assertion, just make sure it doesn't raise an exception
     
     def test_visit_rule(self):
         visitor = DebugVisitor()
         rule = MockRule("TestRule")
-        visitor.visit_rule(rule)
+        visitor.visit_rule(rule)  # This should now be implemented
         # No assertion, just make sure it doesn't raise an exception
 
 if __name__ == "__main__":

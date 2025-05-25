@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Building Parsers with PEG - Cover</title>
+    <style>
+        @page {
+            size: 6in 9in;
+            margin: 0;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+            color: white;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            box-sizing: border-box;
+            padding: 40px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .main-title {
+            font-size: 42px;
+            font-weight: bold;
+            letter-spacing: 2px;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .sub-title {
+            font-size: 24px;
+            font-weight: normal;
+            margin-bottom: 20px;
+            color: #e5e7eb;
+        }
+
+        .complete-guide {
+            font-size: 18px;
+            color: #fbbf24;
+            font-style: italic;
+        }
+
+        .code-section {
+            background: rgba(55, 65, 81, 0.9);
+            border-radius: 10px;
+            padding: 25px;
+            margin: 30px 0;
+            border: 2px solid #fbbf24;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .code-title {
+            color: #fbbf24;
+            font-size: 14px;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        .code {
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            line-height: 1.4;
+            color: #e5e7eb;
+        }
+
+        .features {
+            margin: 30px 0;
+        }
+
+        .features-title {
+            font-size: 18px;
+            color: #fbbf24;
+            margin-bottom: 15px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .feature-list {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            font-size: 14px;
+        }
+
+        .feature-item {
+            display: flex;
+            align-items: center;
+        }
+
+        .feature-item::before {
+            content: "•";
+            color: #fbbf24;
+            font-weight: bold;
+            margin-right: 8px;
+        }
+
+        .author {
+            text-align: center;
+            margin-top: 30px;
+        }
+
+        .author-name {
+            font-size: 20px;
+            font-weight: bold;
+            color: #e5e7eb;
+        }
+
+        .tagline {
+            text-align: center;
+            font-size: 16px;
+            color: #fbbf24;
+            font-style: italic;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="main-title">BUILDING PARSERS</div>
+        <div class="main-title">WITH PEG</div>
+        <div class="sub-title">A Complete Guide to the</div>
+        <div class="complete-guide">TinyPEG Library</div>
+    </div>
+
+    <div class="code-section">
+        <div class="code-title"># Grammar Definition</div>
+        <div class="code">
+Expression ::= Term (('+' | '-') Term)*<br>
+Term       ::= Factor (('*' | '/') Factor)*<br>
+Factor     ::= Number | '(' Expression ')'<br>
+Number     ::= [0-9]+<br>
+<br>
+<span class="code-title"># Python Implementation</span><br>
+parser = PEGParser()<br>
+result = parser.parse("2 + 3 * 4")
+        </div>
+    </div>
+
+    <div class="tagline">From Theory to Implementation</div>
+
+    <div class="features">
+        <div class="features-title">What You'll Master</div>
+        <div class="feature-list">
+            <div class="feature-item">Comprehensive PEG Tutorial</div>
+            <div class="feature-item">Working Code Examples</div>
+            <div class="feature-item">Complete Language Implementation</div>
+            <div class="feature-item">Production-Ready Techniques</div>
+        </div>
+    </div>
+
+    <div class="author">
+        <div class="author-name">Randall Morgan</div>
+    </div>
+</body>
+</html>

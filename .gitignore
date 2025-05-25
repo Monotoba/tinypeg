@@ -248,3 +248,15 @@ fabric.properties
 __pycache__/
 **/__pycache__/
 .zencoder/
+
+# Project specific
+*.tmp
+*.temp
+*~
+.DS_Store
+test_output.txt
+
+# Build artifacts
+build/
+dist/
+*.egg-info/

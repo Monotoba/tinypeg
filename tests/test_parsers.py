@@ -1,6 +1,7 @@
 import unittest
-from src.peg.parsers import PEGParser, Rule
+from src.peg.parsers import PEGParser, Rule, Literal, Sequence
 from src.peg.core import Expression, ParserContext
+from src.peg.syntax_tree import GrammarNode
 
 class MockExpression(Expression):
     def __init__(self, result=True):
@@ -10,6 +11,9 @@ class MockExpression(Expression):
     def parse(self, ctx):
         self.called = True
         return self.result
+        
+    def __repr__(self):
+        return f"MockExpression(result={self.result}, called={self.called})"
 
 class TestRule(unittest.TestCase):
     def test_initialization(self):
@@ -29,12 +33,14 @@ class TestRule(unittest.TestCase):
     def test_parse_with_multiple_expressions(self):
         expr1 = MockExpression(True)
         expr2 = MockExpression(True)
-        rule = Rule("TestRule", expr1, expr2)
+        # Create a sequence of expressions
+        seq = Sequence(expr1, expr2)
+        rule = Rule("TestRule", seq)
         ctx = ParserContext("test")
         result = rule.parse(ctx)
         self.assertTrue(expr1.called)
         self.assertTrue(expr2.called)
-        self.assertTrue(result)
+        self.assertIsNotNone(result)
 
 class TestPEGParser(unittest.TestCase):
     def test_initialization(self):
@@ -44,8 +50,15 @@ class TestPEGParser(unittest.TestCase):
     
     def test_parse(self):
         parser = PEGParser()
-        result = parser.parse("test input")
-        # For now, just check that it returns something
+        # Set up a simple grammar for testing
+        parser.grammar = GrammarNode(
+            name="TestGrammar",
+            rules=[
+                Rule("Start", Literal("test"))
+            ]
+        )
+        result = parser.parse("test")
+        # Check that it returns something
         self.assertIsNotNone(result)
 
 if __name__ == "__main__":

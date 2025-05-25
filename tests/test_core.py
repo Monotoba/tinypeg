@@ -1,5 +1,12 @@
 import unittest
+import os
 from src.peg.core import Expression, Reference, ParserContext, ParseError
+
+print("Running test_core.py")
+
+# Write to a file to verify tests are running
+with open(os.path.join(os.path.dirname(os.path.dirname(__file__)), "test_output.txt"), "w") as f:
+    f.write("Running test_core.py\n")
 
 class TestParserContext(unittest.TestCase):
     def test_initialization(self):

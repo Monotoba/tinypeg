@@ -1,0 +1,35 @@
+# Include documentation
+include README.md
+include LICENSE
+include CHANGELOG.md
+include requirements.txt
+include TINYCL_COMPLETE_REFERENCE.md
+
+# Include documentation directory
+recursive-include docs *.md
+recursive-include docs *.html
+recursive-include docs *.txt
+
+# Include examples
+recursive-include examples *.py
+recursive-include examples *.tcl
+recursive-include examples *.md
+
+# Include source documentation
+recursive-include src *.md
+
+# Include doc tools
+recursive-include doc_tools *.py
+
+# Include tests
+recursive-include tests *.py
+
+# Exclude development and cache files
+global-exclude __pycache__
+global-exclude *.py[cod]
+global-exclude .DS_Store
+global-exclude *.so
+global-exclude .git*
+global-exclude .idea*
+global-exclude .venv*
+global-exclude .zencoder*

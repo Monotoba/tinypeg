@@ -1,401 +1,539 @@
-# Chapter 4: Example Parsers
+# Chapter 4: Example Parsers and Applications
 
-In this chapter, we'll explore the example parsers included with the TinyPEG library. These examples demonstrate different aspects of parser implementation and can serve as templates for your own parsers.
+In this chapter, we'll explore the comprehensive collection of example parsers included with the TinyPEG library. These examples demonstrate different aspects of parser implementation, from simple calculators to complete programming languages, and can serve as templates for your own parsers.
 
-## 4.1 Calculator Parser
+Our examples are organized into three main categories:
+- **Calculator Examples**: Arithmetic expression parsers with increasing complexity
+- **Language Parser Examples**: Simple programming language constructs
+- **TinyCL Language**: Complete programming language implementation
 
-The calculator parser is a simple example that parses and evaluates arithmetic expressions. It supports basic operations like addition, subtraction, multiplication, and division.
+## 4.1 Calculator Examples
 
-### 4.1.1 Grammar Definition
+The calculator examples demonstrate how to build arithmetic expression parsers with increasing complexity, showing proper operator precedence and evaluation.
 
-The grammar for the calculator is defined as follows:
+### 4.1.1 Simple Calculator
 
-```
-Expression ::= Term
-Term       ::= Factor
-Factor     ::= Number
-Number     ::= [0-9]+
-```
-
-This is a simplified grammar that only handles numbers. In a more complete calculator, we would add support for operators and parentheses, as we did in the previous chapter.
-
-### 4.1.2 Implementation
-
-Let's look at the implementation of the calculator parser:
+The simple calculator (`examples/peg_usage/calculators/simple_calculator.py`) supports only addition and subtraction:
 
 ```python
-# src/examples/calc/calculator.py
-from src.peg.parsers import PEGParser, Rule
-from src.peg.core import ParseError, Reference
-from src.peg.syntax_tree import GrammarNode, DebugVisitor
+#!/usr/bin/env python3
+"""
+Simple calculator example using the TinyPEG library.
+Supports only addition and subtraction.
+"""
 
+from calculator_base import SimpleCalculator
 
-class MathExpressionParser(PEGParser):
+def main():
+    """Test the simple calculator."""
+    calculator = SimpleCalculator()
+
+    # Test expressions for simple arithmetic
+    expressions = [
+        "3",
+        "42",
+        "3+5",
+        "3 + 5",
+        "10 - 4",
+        "3 + 5 - 2",
+        "100 + 200 - 50"
+    ]
+
+    print("=== Simple Calculator (Addition/Subtraction Only) ===")
+    calculator.test_expressions(expressions)
+
+if __name__ == "__main__":
+    main()
+```
+
+This calculator uses a base class that handles the common parsing logic and provides a clean interface for testing expressions.
+
+### 4.1.2 Advanced Calculator
+
+The advanced calculator (`examples/peg_usage/calculators/advanced_calculator.py`) supports full arithmetic with proper precedence:
+
+```python
+#!/usr/bin/env python3
+"""
+Advanced calculator with full arithmetic operations and precedence.
+"""
+
+from calculator_base import AdvancedCalculator
+
+def main():
+    """Test the advanced calculator."""
+    calculator = AdvancedCalculator()
+
+    # Test expressions with precedence and parentheses
+    expressions = [
+        "3",
+        "42",
+        "3+5",
+        "3 + 5",
+        "10 - 4",
+        "3 * 5",
+        "10 / 2",
+        "3 + 5 * 2",        # Should be 13 with proper precedence
+        "10 - 2 * 3",       # Should be 4 with proper precedence
+        "3 * 5 + 2",        # Should be 17
+        "10 / 2 - 3",       # Should be 2
+        "(3 + 5) * 2",      # Should be 16
+        "3 + (5 * 2)",      # Should be 13
+        "3 * (5 + 2)",      # Should be 21
+        "(3 + 5) * (2 + 1)" # Should be 24
+    ]
+
+    print("=== Advanced Calculator (Full Arithmetic with Precedence) ===")
+    calculator.test_expressions(expressions)
+
+if __name__ == "__main__":
+    main()
+```
+
+### 4.1.3 Calculator Base Classes
+
+Both calculators inherit from base classes in `calculator_base.py` that provide the core parsing logic:
+
+```python
+from src.peg import (
+    PEGParser, Rule, Reference, ParseError,
+    Sequence, Choice, ZeroOrMore, Literal, Regex
+)
+from src.peg.syntax_tree import GrammarNode
+
+class AdvancedCalculator(PEGParser):
+    """Advanced calculator with full arithmetic operations and precedence."""
+
     def __init__(self):
         super().__init__()
 
-        # Define grammar for the mathematical expression
+        # Define grammar with proper precedence
         self.grammar = GrammarNode(
             name="Expression",
             rules=[
-                Rule("Expression", Reference("Term")),
-                Rule("Term", Reference("Factor")),
-                Rule("Factor", Reference("Number")),
-                Rule("Number", Reference("[0-9]+")),
+                # Expression = Term (('+' | '-') Term)*
+                Rule("Expression", Sequence(
+                    Reference("Term"),
+                    ZeroOrMore(
+                        Sequence(
+                            Choice(Literal("+"), Literal("-")),
+                            Reference("Term")
+                        )
+                    )
+                )),
+
+                # Term = Factor (('*' | '/') Factor)*
+                Rule("Term", Sequence(
+                    Reference("Factor"),
+                    ZeroOrMore(
+                        Sequence(
+                            Choice(Literal("*"), Literal("/")),
+                            Reference("Factor")
+                        )
+                    )
+                )),
+
+                # Factor = Number | '(' Expression ')'
+                Rule("Factor", Choice(
+                    Reference("Number"),
+                    Sequence(
+                        Literal("("),
+                        Reference("Expression"),
+                        Literal(")")
+                    )
+                )),
+
+                # Number = [0-9]+
+                Rule("Number", Regex("[0-9]+"))
             ]
         )
-
-    def parse(self, text: str):
-        print(f"Parsing expression: {text}")
-        # Parse and return the expression's result
-        result = super().parse(text)
-        return result
-
-
-if __name__ == "__main__":
-    try:
-        expression = "3 + 5 * (2 - 8)"
-        parser = MathExpressionParser()
-        syntax_tree = parser.parse(expression)
-
-        # Visitor for debugging
-        debug_visitor = DebugVisitor()
-        syntax_tree.accept(debug_visitor)
-    except ParseError as e:
-        print(f"Error while parsing expression: {e}")
 ```
 
-This implementation creates a parser with a simple grammar for mathematical expressions. The `parse` method takes a string input, parses it according to the grammar, and returns the result.
+This implementation demonstrates proper operator precedence and parentheses handling.
 
-### 4.1.3 Testing and Usage
+### 4.1.4 Testing and Usage
 
-To test the calculator parser, we can run the script directly:
+To test the calculator examples, run them directly:
 
 ```bash
-python -m src.examples.calc.calculator
+# Test simple calculator (addition/subtraction only)
+cd examples/peg_usage/calculators
+python simple_calculator.py
+
+# Test advanced calculator (full arithmetic with precedence)
+python advanced_calculator.py
 ```
 
-This will parse the expression "3 + 5 * (2 - 8)" and print the resulting syntax tree.
-
-To use the calculator parser in your own code, you can import and instantiate it:
+To use the calculators in your own code:
 
 ```python
-from src.examples.calc.calculator import MathExpressionParser
+from examples.peg_usage.calculators.calculator_base import AdvancedCalculator
 
-parser = MathExpressionParser()
-result = parser.parse("42")
-print(result)
+calculator = AdvancedCalculator()
+result = calculator.evaluate("3 + 5 * 2")
+print(f"Result: {result}")  # Output: Result: 13
 ```
 
-## 4.2 If Statement Parser
+## 4.2 Language Parser Examples
 
-The if statement parser demonstrates how to parse a simple if statement in a programming language.
+The language parser examples demonstrate how to parse various programming language constructs. These are located in `examples/peg_usage/language_parsers/`.
 
-### 4.2.1 Grammar Definition
+### 4.2.1 Basic Language Constructs
 
-The grammar for the if statement is defined as follows:
+Our examples include parsers for fundamental programming language elements:
 
-```
-IfStatement ::= If
-If          ::= "if"
-Statement   ::= "print"
-```
+#### Number Parser
 
-This is a very simplified grammar that only recognizes the basic structure of an if statement. In a real programming language parser, we would add support for conditions, blocks, and else clauses.
-
-### 4.2.2 Implementation
-
-Let's look at the implementation of the if statement parser:
+The simplest example (`number_parser.py`) parses just numbers:
 
 ```python
-# src/examples/ifstmt/ifstmt.py
-from src.peg.parsers import PEGParser, Rule
-from src.peg.core import ParseError, Reference
-from src.peg.syntax_tree import GrammarNode, DebugVisitor
+from src.peg import PEGParser, Rule, Regex
+from src.peg.syntax_tree import GrammarNode
 
+class NumberParser(PEGParser):
+    def __init__(self):
+        super().__init__()
+        self.grammar = GrammarNode(
+            name="Number",
+            rules=[
+                Rule("Number", Regex("[0-9]+"))
+            ]
+        )
+```
+
+#### If Statement Parser
+
+The if statement parser (`ifstmt.py`) demonstrates conditional parsing:
+
+```python
+from src.peg import (
+    PEGParser, Rule, Reference, Sequence, Choice,
+    Literal, Regex
+)
+from src.peg.syntax_tree import GrammarNode
 
 class IfStatementParser(PEGParser):
     def __init__(self):
         super().__init__()
 
-        # Define grammar for the if statement
         self.grammar = GrammarNode(
             name="IfStatement",
             rules=[
-                Rule("IfStatement", Reference("If")),
-                Rule("If", Reference('"if"')),
-                Rule("Statement", Reference('"print"'))
+                Rule("IfStatement", Sequence(
+                    Literal("if"),
+                    Literal("("),
+                    Reference("Condition"),
+                    Literal(")"),
+                    Reference("Block")
+                )),
+                Rule("Condition", Reference("Expression")),
+                Rule("Block", Sequence(
+                    Literal("{"),
+                    Reference("Statement"),
+                    Literal("}")
+                )),
+                Rule("Statement", Reference("PrintStatement")),
+                Rule("PrintStatement", Sequence(
+                    Literal("print"),
+                    Literal("("),
+                    Reference("Expression"),
+                    Literal(")"),
+                    Literal(";")
+                )),
+                Rule("Expression", Reference("Identifier")),
+                Rule("Identifier", Regex("[a-zA-Z_][a-zA-Z0-9_]*"))
             ]
         )
-
-    def parse(self, text: str):
-        print(f"Parsing if statement: {text}")
-        # Parse the input
-        result = super().parse(text)
-        return result
-
-
-if __name__ == "__main__":
-    try:
-        if_statement = "if (x > 5) { print(x); }"
-        parser = IfStatementParser()
-        syntax_tree = parser.parse(if_statement)
-
-        # Walk the syntax tree with a debug visitor
-        debug_visitor = DebugVisitor()
-        syntax_tree.accept(debug_visitor)
-    except ParseError as e:
-        print(f"Error while parsing if statement: {e}")
 ```
 
-This implementation creates a parser with a simple grammar for if statements. The `parse` method takes a string input, parses it according to the grammar, and returns the result.
+#### While Loop Parser
 
-### 4.2.3 Testing and Usage
-
-To test the if statement parser, we can run the script directly:
-
-```bash
-python -m src.examples.ifstmt.ifstmt
-```
-
-This will parse the if statement "if (x > 5) { print(x); }" and print the resulting syntax tree.
-
-To use the if statement parser in your own code, you can import and instantiate it:
+The while loop parser (`while.py`) handles iterative constructs:
 
 ```python
-from src.examples.ifstmt.ifstmt import IfStatementParser
-
-parser = IfStatementParser()
-result = parser.parse("if (condition) { statement; }")
-print(result)
-```
-
-## 4.3 While Loop Parser
-
-The while loop parser demonstrates how to parse a simple while loop in a programming language.
-
-### 4.3.1 Grammar Definition
-
-The grammar for the while loop is defined as follows:
-
-```
-WhileLoop ::= While
-While     ::= "while"
-Statement ::= "print"
-```
-
-This is a very simplified grammar that only recognizes the basic structure of a while loop. In a real programming language parser, we would add support for conditions, blocks, and break/continue statements.
-
-### 4.3.2 Implementation
-
-Let's look at the implementation of the while loop parser:
-
-```python
-# src/examples/while_loop/while.py
-from src.peg.parsers import PEGParser, Rule
-from src.peg.core import ParseError, Reference
-from src.peg.syntax_tree import GrammarNode, DebugVisitor
-
-
 class WhileLoopParser(PEGParser):
     def __init__(self):
         super().__init__()
 
-        # Define grammar for the while loop
         self.grammar = GrammarNode(
             name="WhileLoop",
             rules=[
-                Rule("WhileLoop", Reference("While")),
-                Rule("While", Reference('"while"')),
-                Rule("Statement", Reference('"print"'))
+                Rule("WhileLoop", Sequence(
+                    Literal("while"),
+                    Literal("("),
+                    Reference("Condition"),
+                    Literal(")"),
+                    Reference("Block")
+                )),
+                # ... similar structure to if statement
             ]
         )
-
-    def parse(self, text: str):
-        print(f"Parsing while loop: {text}")
-        # Parse the input
-        result = super().parse(text)
-        return result
-
-
-if __name__ == "__main__":
-    try:
-        while_loop = "while (x < 10) { print(x); }"
-        parser = WhileLoopParser()
-        syntax_tree = parser.parse(while_loop)
-
-        # Walk the syntax tree with a debug visitor
-        debug_visitor = DebugVisitor()
-        syntax_tree.accept(debug_visitor)
-    except ParseError as e:
-        print(f"Error while parsing while loop: {e}")
 ```
 
-This implementation creates a parser with a simple grammar for while loops. The `parse` method takes a string input, parses it according to the grammar, and returns the result.
+### 4.2.2 TinyCL Language Variants
 
-### 4.3.3 Testing and Usage
+We also have several TinyCL language parser examples that demonstrate different levels of complexity:
 
-To test the while loop parser, we can run the script directly:
+#### Minimal TinyCL
 
-```bash
-python -m src.examples.while_loop.while
-```
-
-This will parse the while loop "while (x < 10) { print(x); }" and print the resulting syntax tree.
-
-To use the while loop parser in your own code, you can import and instantiate it:
+The minimal TinyCL parser (`minimal_tinycl.py`) implements a very basic subset:
 
 ```python
-from src.examples.while_loop.while import WhileLoopParser
+from src.peg import (
+    PEGParser, Rule, Reference, Sequence, Choice,
+    ZeroOrMore, Literal, Regex
+)
+from src.peg.syntax_tree import GrammarNode
 
-parser = WhileLoopParser()
-result = parser.parse("while (condition) { statement; }")
-print(result)
-```
-
-## 4.4 Tiny Language Parser (EmLang)
-
-The EmLang parser demonstrates how to parse a simple programming language with variables, assignments, and print statements.
-
-### 4.4.1 Grammar Definition
-
-The grammar for EmLang is defined as follows:
-
-```
-Program        ::= Statement
-Statement      ::= PrintStatement | Assignment
-PrintStatement ::= "print"
-Assignment     ::= Identifier "=" Expression
-Expression     ::= Number
-Number         ::= [0-9]+
-Identifier     ::= [a-zA-Z_][a-zA-Z0-9_]*
-```
-
-This grammar defines a simple language with two types of statements: print statements and assignments. Expressions are limited to numbers, and identifiers follow standard programming language conventions.
-
-### 4.4.2 Implementation
-
-Let's look at the implementation of the EmLang parser:
-
-```python
-# src/examples/emlang/emlang.py
-from src.peg.parsers import PEGParser, Rule
-from src.peg.core import ParseError, Reference
-from src.peg.syntax_tree import GrammarNode, DebugVisitor
-
-
-class TinyLanguageParser(PEGParser):
+class MinimalTinyCLParser(PEGParser):
     def __init__(self):
         super().__init__()
 
-        # Define grammar for the minimal language
         self.grammar = GrammarNode(
-            name="TinyLanguage",
+            name="MinimalTinyCL",
             rules=[
-                Rule("Program", Reference("Statement")),
-                Rule("Statement", Reference("PrintStatement"), Reference("Assignment")),
-                Rule("PrintStatement", Reference('"print"')),
-                Rule("Assignment", Reference("Identifier"), Reference("="), Reference("Expression")),
+                Rule("Program", ZeroOrMore(Reference("Statement"))),
+                Rule("Statement", Choice(
+                    Reference("VariableDecl"),
+                    Reference("PrintStatement")
+                )),
+                Rule("VariableDecl", Sequence(
+                    Literal("var"),
+                    Reference("Identifier"),
+                    Literal("="),
+                    Reference("Expression"),
+                    Literal(";")
+                )),
+                Rule("PrintStatement", Sequence(
+                    Literal("print"),
+                    Literal("("),
+                    Reference("Expression"),
+                    Literal(")"),
+                    Literal(";")
+                )),
                 Rule("Expression", Reference("Number")),
-                Rule("Number", Reference("[0-9]+")),
-                Rule("Identifier", Reference("[a-zA-Z_][a-zA-Z0-9_]*"))
+                Rule("Number", Regex("[0-9]+")),
+                Rule("Identifier", Regex("[a-zA-Z_][a-zA-Z0-9_]*"))
             ]
         )
+```
 
-    def parse(self, text: str):
-        print(f"Parsing tiny language code: {text}")
-        # Parse the input
-        result = super().parse(text)
-        return result
+#### Simple TinyCL
 
+The simple TinyCL parser (`simple_tinycl.py`) adds arithmetic expressions:
+
+```python
+# Extends minimal TinyCL with arithmetic operations
+Rule("Expression", Sequence(
+    Reference("Term"),
+    ZeroOrMore(Sequence(
+        Choice(Literal("+"), Literal("-")),
+        Reference("Term")
+    ))
+)),
+Rule("Term", Sequence(
+    Reference("Factor"),
+    ZeroOrMore(Sequence(
+        Choice(Literal("*"), Literal("/")),
+        Reference("Factor")
+    ))
+)),
+Rule("Factor", Choice(
+    Reference("Number"),
+    Reference("Identifier"),
+    Sequence(Literal("("), Reference("Expression"), Literal(")"))
+))
+```
+
+#### Standalone TinyCL
+
+The standalone TinyCL parser (`standalone_tinycl.py`) is a complete, self-contained implementation that can be used independently.
+
+## 4.3 Complete TinyCL Implementation
+
+The complete TinyCL (Tiny C-Like Language) implementation is our flagship example, demonstrating a full-featured programming language with parser, interpreter, and compiler.
+
+### 4.3.1 TinyCL Features
+
+The complete TinyCL implementation (`examples/tinycl_language/`) includes:
+
+- **Variables and Constants**: `var x = 10;` and `const PI = 3;`
+- **Functions**: `func add(a, b) { return a + b; }`
+- **Arrays**: `[1, 2, 3]` with indexing `arr[0]`
+- **Control Flow**: If-else statements and while loops
+- **Full Expression System**: Arithmetic, logical, and comparison operators
+- **Data Types**: Numbers, strings, characters, booleans, arrays
+- **Built-in Functions**: `print()` for output
+
+### 4.3.2 Comprehensive Test
+
+The comprehensive test (`comprehensive_test.py`) demonstrates all TinyCL features:
+
+```python
+#!/usr/bin/env python3
+"""
+Comprehensive test of the TinyCL language implementation.
+"""
+
+from src.tinycl.parser import TinyCLParser
+from src.tinycl.interpreter import TinyCLInterpreter
+
+def test_complete_program():
+    """Test a complete TinyCL program with all features."""
+
+    program = '''
+    # TinyCL Comprehensive Test Program
+
+    # Constants and variables
+    const MAX = 10;
+    var numbers = [5, 3, 8, 1, 9];
+    var sum = 0;
+
+    # Function to calculate factorial
+    func factorial(n) {
+        if (n <= 1) {
+            return 1;
+        } else {
+            return n * factorial(n - 1);
+        }
+    }
+
+    # Calculate sum of array
+    var i = 0;
+    while (i < 5) {
+        sum = sum + numbers[i];
+        i = i + 1;
+    }
+
+    print("Array sum: " + sum);
+
+    # Test factorial function
+    var fact5 = factorial(5);
+    print("Factorial of 5: " + fact5);
+
+    # Test logical operations
+    if (sum > 20 && fact5 > 100) {
+        print("Both conditions are true!");
+    }
+    '''
+
+    # Parse the program
+    parser = TinyCLParser()
+    ast = parser.parse(program)
+
+    # Interpret the program
+    interpreter = TinyCLInterpreter()
+    interpreter.interpret(ast)
 
 if __name__ == "__main__":
-    try:
-        code = "x = 10; print(x);"
-        parser = TinyLanguageParser()
-        syntax_tree = parser.parse(code)
-
-        # Walk the syntax tree with a debug visitor
-        debug_visitor = DebugVisitor()
-        syntax_tree.accept(debug_visitor)
-    except ParseError as e:
-        print(f"Error while parsing tiny language code: {e}")
+    test_complete_program()
 ```
 
-This implementation creates a parser with a grammar for the EmLang language. The `parse` method takes a string input, parses it according to the grammar, and returns the result.
+### 4.3.3 Multi-Target Compilation
 
-### 4.4.3 Testing and Usage
+TinyCL also includes compilers that can generate code for different targets:
 
-To test the EmLang parser, we can run the script directly:
+#### Python Compiler
+
+```python
+from src.tinycl.compiler import PythonCompiler
+
+compiler = PythonCompiler()
+python_code = compiler.compile(ast)
+print("Generated Python code:")
+print(python_code)
+```
+
+#### C Compiler
+
+```python
+from src.tinycl.compiler import CCompiler
+
+compiler = CCompiler()
+c_code = compiler.compile(ast)
+print("Generated C code:")
+print(c_code)
+```
+
+## 4.4 Running the Examples
+
+All examples can be run directly from their respective directories:
+
+### Calculator Examples
 
 ```bash
-python -m src.examples.emlang.emlang
+# Navigate to calculator examples
+cd examples/peg_usage/calculators
+
+# Run simple calculator
+python simple_calculator.py
+
+# Run advanced calculator
+python advanced_calculator.py
+
+# Run number parser
+python number_parser.py
 ```
 
-This will parse the code "x = 10; print(x);" and print the resulting syntax tree.
+### Language Parser Examples
 
-To use the EmLang parser in your own code, you can import and instantiate it:
+```bash
+# Navigate to language parser examples
+cd examples/peg_usage/language_parsers
 
-```python
-from src.examples.emlang.emlang import TinyLanguageParser
+# Run minimal TinyCL
+python minimal_tinycl.py
 
-parser = TinyLanguageParser()
-result = parser.parse("x = 42; print(x);")
-print(result)
+# Run simple TinyCL
+python simple_tinycl.py
+
+# Run if statement parser
+python ifstmt.py
+
+# Run while loop parser
+python while.py
+
+# Run EmLang parser
+python emlang.py
 ```
 
-## Enhancing the Examples
+### Complete TinyCL
 
-These examples are intentionally simplified to demonstrate the basic structure of parsers for different language constructs. In a real-world scenario, you would enhance them in several ways:
+```bash
+# Navigate to TinyCL examples
+cd examples/tinycl_language
 
-1. **Complete Grammar**: Add support for all language features, including operators, control structures, and more complex expressions.
-
-2. **AST Construction**: Build a proper abstract syntax tree (AST) instead of just recognizing the syntax.
-
-3. **Semantic Analysis**: Add checks for semantic correctness, such as type checking and variable declaration.
-
-4. **Interpretation or Code Generation**: Add the ability to execute the parsed code or generate code in another language.
-
-Let's see how we might enhance the EmLang parser to support a more complete language:
-
-```python
-# Enhanced EmLang parser
-class EnhancedEmLangParser(PEGParser):
-    def __init__(self):
-        super().__init__()
-
-        # Define grammar for the enhanced language
-        self.grammar = GrammarNode(
-            name="EnhancedEmLang",
-            rules=[
-                Rule("Program", Reference("StatementList")),
-                Rule("StatementList", Reference("Statement"), Reference("StatementList"), Reference("Statement")),
-                Rule("Statement", Reference("PrintStatement"), Reference("Assignment"), Reference("IfStatement"), Reference("WhileStatement")),
-                Rule("PrintStatement", Reference('"print"'), Reference("("), Reference("Expression"), Reference(")")),
-                Rule("Assignment", Reference("Identifier"), Reference("="), Reference("Expression")),
-                Rule("IfStatement", Reference('"if"'), Reference("("), Reference("Condition"), Reference(")"), Reference("Block"), Reference('"else"'), Reference("Block")),
-                Rule("WhileStatement", Reference('"while"'), Reference("("), Reference("Condition"), Reference(")"), Reference("Block")),
-                Rule("Block", Reference("{"), Reference("StatementList"), Reference("}")),
-                Rule("Condition", Reference("Expression"), Reference("ComparisonOp"), Reference("Expression")),
-                Rule("ComparisonOp", Reference("=="), Reference("<"), Reference(">"), Reference("<="), Reference(">=")),
-                Rule("Expression", Reference("Term"), Reference("+"), Reference("Expression"), Reference("-"), Reference("Expression"), Reference("Term")),
-                Rule("Term", Reference("Factor"), Reference("*"), Reference("Term"), Reference("/"), Reference("Term"), Reference("Factor")),
-                Rule("Factor", Reference("Number"), Reference("Identifier"), Reference("("), Reference("Expression"), Reference(")")),
-                Rule("Number", Reference("[0-9]+")),
-                Rule("Identifier", Reference("[a-zA-Z_][a-zA-Z0-9_]*"))
-            ]
-        )
+# Run comprehensive test
+python comprehensive_test.py
 ```
 
-This enhanced grammar supports a much richer language with if statements, while loops, blocks, conditions, and expressions with operators.
+## 4.5 Example Organization
+
+Our examples are organized to show progression from simple to complex:
+
+| Category | Complexity | Features Demonstrated |
+|----------|------------|----------------------|
+| **Basic Parsers** | Simple | Single constructs, basic parsing |
+| **Calculator Examples** | Medium | Expression parsing, precedence, evaluation |
+| **Language Parsers** | Medium-High | Multiple constructs, grammar composition |
+| **TinyCL Complete** | High | Full language, interpreter, compiler |
 
 ## Summary
 
-In this chapter, we've explored the example parsers included with the TinyPEG library:
+This chapter has explored the comprehensive collection of example parsers included with the TinyPEG library. These examples demonstrate:
 
-1. **Calculator Parser**: Parses and evaluates arithmetic expressions
-2. **If Statement Parser**: Parses if statements in a programming language
-3. **While Loop Parser**: Parses while loops in a programming language
-4. **EmLang Parser**: Parses a simple programming language with variables and print statements
+1. **Progressive Complexity**: From simple number parsing to complete programming languages
+2. **Real-World Applications**: Practical examples that can be adapted for your own projects
+3. **Best Practices**: Proper grammar design, error handling, and code organization
+4. **Complete Implementation**: Full language implementation with parser, interpreter, and compiler
 
-These examples demonstrate different aspects of parser implementation and can serve as templates for your own parsers. In the next chapter, we'll build a more complete programming language parser for TinyCL.
+Key takeaways:
+
+- **Start Simple**: Begin with basic constructs and gradually add complexity
+- **Proper Structure**: Organize grammars with clear precedence and modularity
+- **Testing**: Each example includes comprehensive testing to verify functionality
+- **Documentation**: All examples are well-documented and self-contained
+
+By studying these examples and experimenting with them, you'll gain practical experience with the TinyPEG library and be ready to build parsers for your own domain-specific languages and applications.
+
+The examples serve as both learning tools and starting points for your own parser projects. Whether you're building a simple calculator or a complete programming language, these examples provide the foundation and patterns you need to succeed.

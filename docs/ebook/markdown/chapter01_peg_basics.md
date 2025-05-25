@@ -44,7 +44,17 @@ PEGs use a set of operators to define parsing expressions:
 | `!e` | Not-Predicate | Succeed if e doesn't match and don't consume input | `![0-9]` |
 | `(e)` | Grouping | Group expressions | `("+" / "-") Term` |
 
-In our TinyPEG implementation, these operators are represented through class structures rather than this specific syntax, but the concepts remain the same.
+In our TinyPEG implementation, these operators are represented through Python classes rather than this specific syntax. For example:
+
+- **Sequence** → `Sequence(expr1, expr2)`
+- **Ordered Choice** → `Choice(expr1, expr2)`
+- **Zero-or-More** → `ZeroOrMore(expr)`
+- **One-or-More** → `OneOrMore(expr)`
+- **Optional** → `Optional(expr)`
+- **And-Predicate** → `AndPredicate(expr)`
+- **Not-Predicate** → `NotPredicate(expr)`
+
+This class-based approach provides better integration with Python and enables more sophisticated parsing behaviors.
 
 ## 1.4 Recursive Descent Parsing
 
@@ -98,28 +108,68 @@ The basic idea is:
 2. If we have, return the cached result
 3. Otherwise, perform the parsing and cache the result before returning it
 
-Here's how our previous example might be modified to use memoization:
+Here's how our TinyPEG implementation incorporates memoization:
 
 ```python
-def parse_expression(input, pos, memo=None):
-    if memo is None:
-        memo = {}
-    
-    # Check if we've already parsed this rule at this position
-    memo_key = ('expression', pos)
-    if memo_key in memo:
-        return memo[memo_key]
-    
-    # Try to parse as a term
-    result, new_pos = parse_term(input, pos, memo)
-    
-    # Cache and return the result
-    memo[memo_key] = (result, new_pos)
-    return result, new_pos
+class PEGParser:
+    def __init__(self):
+        self.grammar = None
+        self.rule_cache = {}  # Memoization cache
 
-# Similar modifications for parse_term and parse_factor
+    def _parse_rule(self, rule, ctx):
+        """Parse a rule with memoization."""
+        # Check if we've already parsed this rule at this position
+        cache_key = (rule.name, ctx.pos)
+        if cache_key in self.rule_cache:
+            result, new_pos = self.rule_cache[cache_key]
+            ctx.pos = new_pos
+            return result
+
+        # Save position for backtracking
+        start_pos = ctx.pos
+
+        try:
+            # Parse the rule's expression
+            result = self._parse_expression(rule.expr, ctx)
+
+            # Cache the successful result
+            self.rule_cache[cache_key] = (result, ctx.pos)
+            return result
+        except ParseError:
+            # Backtrack on failure
+            ctx.pos = start_pos
+            raise
 ```
 
-In our TinyPEG implementation, we'll incorporate memoization to ensure efficient parsing, especially for complex grammars.
+Our TinyPEG implementation automatically incorporates memoization in the `PEGParser` class, ensuring efficient parsing without requiring manual cache management.
 
-In the next chapter, we'll explore the architecture and components of the TinyPEG library, seeing how these concepts are implemented in practice.
+## 1.6 TinyPEG Implementation Preview
+
+Our TinyPEG library implements these PEG concepts using a clean, object-oriented Python design:
+
+- **Class-based Grammar Definition**: Grammars are defined using Python classes rather than text files
+- **Automatic Memoization**: Built-in packrat parsing for optimal performance
+- **Integrated Whitespace Handling**: Automatic whitespace management between tokens
+- **Comprehensive Error Reporting**: Detailed error messages with position information
+- **Extensible Architecture**: Easy to extend with custom parsing behaviors
+
+Here's a preview of how a simple grammar looks in TinyPEG:
+
+```python
+from src.peg import PEGParser, Rule, GrammarNode, Literal, Regex
+
+# Define a simple number parser
+grammar = GrammarNode(
+    name="Number",
+    rules=[
+        Rule("Number", Regex("[0-9]+"))
+    ]
+)
+
+# Create and use the parser
+parser = PEGParser()
+parser.grammar = grammar
+result = parser.parse("42")  # Returns "42"
+```
+
+In the next chapter, we'll explore the complete architecture and components of the TinyPEG library, seeing how these concepts are implemented in detail.

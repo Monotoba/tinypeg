@@ -1,0 +1,14 @@
+# TinyPEG Requirements
+# This project uses only Python standard library modules
+# No external dependencies required
+
+# Python 3.7+ is recommended for best compatibility
+# The project has been tested with Python 3.8+
+
+# Optional: For development and testing
+# pytest>=6.0.0  # For running tests (if you want to add pytest)
+# black>=21.0.0   # For code formatting (optional)
+# flake8>=3.8.0   # For linting (optional)
+
+# Note: This project is designed to have zero external dependencies
+# to make it easy to use and understand for educational purposes.

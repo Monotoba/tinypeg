@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Preface</title>
+    <style>
+body { font-family: Arial, sans-serif; line-height: 1.6; max-width: 800px; margin: 0 auto; padding: 20px; }
+pre { background-color: #f5f5f5; padding: 10px; border-radius: 5px; overflow-x: auto; }
+code { font-family: monospace; }
+h1, h2, h3 { color: #333; }
+a { color: #0066cc; }
+    </style>
+</head>
+<body>
+<h1>Preface</h1>
+<h2>The Art and Science of Parsing</h2>
+<p>Parsing is a fundamental concept in computer science that bridges the gap between human-readable text and machine-processable structures. At its core, parsing is the process of analyzing a sequence of symbols (like text) according to the rules of a formal grammar.</p>
+<p>Whether you're building a programming language, a configuration file parser, or a domain-specific language for a specialized application, understanding parsing techniques is essential. This knowledge empowers you to create tools that can interpret and process structured text in meaningful ways.</p>
+<h2>Why Parsing Expression Grammars?</h2>
+<p>Parsing Expression Grammars (PEGs) represent a powerful approach to syntax analysis that combines the expressiveness of context-free grammars with the efficiency and predictability of recursive descent parsing.</p>
+<p>Unlike traditional context-free grammars that can be ambiguous, PEGs are inherently unambiguous due to their ordered choice operator. This means that when multiple parsing rules could match, a PEG parser will always choose the first matching rule, eliminating ambiguity.</p>
+<p>Key advantages of PEGs include:</p>
+<ul>
+<li><strong>Unambiguous parsing</strong>: The ordered choice operator ensures a single valid parse for any input</li>
+<li><strong>Integrated lexical and syntactic analysis</strong>: No separate lexer/tokenizer is needed</li>
+<li><strong>Powerful pattern matching</strong>: Including lookahead and negative lookahead assertions</li>
+<li><strong>Intuitive notation</strong>: Grammar rules that closely resemble EBNF notation</li>
+<li><strong>Recursive descent implementation</strong>: Straightforward to implement and understand</li>
+</ul>
+<h2>About This Documentation</h2>
+<p>This documentation serves as both a reference guide and a tutorial for the TinyPEG library. We'll explore:</p>
+<ol>
+<li>The theoretical foundations of Parsing Expression Grammars</li>
+<li>The architecture and components of the TinyPEG library</li>
+<li>Practical examples of building parsers for various use cases</li>
+<li>A step-by-step guide to creating a complete tiny programming language</li>
+</ol>
+<h3>Current Status</h3>
+<p>The TinyPEG library is being actively developed. The current version includes:</p>
+<ul>
+<li>A fixed implementation of the core parsing components in <code>fixed_core.py</code> and <code>fixed_parsers.py</code></li>
+<li>Working examples in the <code>examples</code> directory, including a standalone TinyCL implementation</li>
+<li>Comprehensive documentation and tutorials</li>
+</ul>
+<p>For the most up-to-date information about the project's status, see the <a href="../../status.md">Project Status</a> document.</p>
+<p>Whether you're a student learning about parsing for the first time, a developer looking to build a custom parser, or an educator teaching language design, we hope this documentation provides valuable insights and practical guidance.</p>
+<p>Let's embark on this journey into the fascinating world of parsing and language design!</p>
+<hr />
+<p><em>"Programming languages are how programmers express and communicate ideas — and, occasionally, frustrations."</em> — Simon Peyton Jones</p>
+<hr />
+<p><strong>Copyright © 2024 Randall Morgan. All rights reserved.</strong></p>
+</body>
+</html>

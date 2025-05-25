@@ -23,16 +23,16 @@ class TestParserContext(unittest.TestCase):
         ctx = ParserContext("test")
         self.assertEqual(ctx.text, "test")
         self.assertEqual(ctx.pos, 0)
-    
+
     def test_eof(self):
         ctx = ParserContext("")
         self.assertTrue(ctx.eof())
-        
+
         ctx = ParserContext("a")
         self.assertFalse(ctx.eof())
         ctx.pos = 1
         self.assertTrue(ctx.eof())
-    
+
     def test_peek(self):
         ctx = ParserContext("abc")
         self.assertEqual(ctx.peek(), "a")
@@ -40,7 +40,7 @@ class TestParserContext(unittest.TestCase):
         self.assertEqual(ctx.peek(), "b")
         ctx.pos = 3  # Beyond the end
         self.assertIsNone(ctx.peek())
-    
+
     def test_consume(self):
         ctx = ParserContext("abc")
         self.assertEqual(ctx.consume(), "a")
@@ -56,7 +56,7 @@ class TestReference(unittest.TestCase):
     def test_initialization(self):
         ref = Reference("TestRule")
         self.assertEqual(ref.name, "TestRule")
-    
+
     def test_parse_not_implemented(self):
         ref = Reference("TestRule")
         ctx = ParserContext("test")
@@ -72,35 +72,46 @@ And here's an example of unit tests for a specific parser:
 ```python
 # tests/test_calculator.py
 import unittest
-from src.examples.calc.calculator import MathExpressionParser
+from examples.peg_usage.calculators.advanced_calculator import AdvancedCalculator
 from src.peg.core import ParseError
 
 class TestCalculatorParser(unittest.TestCase):
     def setUp(self):
-        self.parser = MathExpressionParser()
-    
+        self.parser = AdvancedCalculator()
+
     def test_parse_number(self):
         result = self.parser.parse("42")
         self.assertIsNotNone(result)
-        # Add more specific assertions based on your implementation
-    
+        # Test evaluation
+        value = self.parser.evaluate("42")
+        self.assertEqual(value, 42)
+
     def test_parse_expression(self):
         result = self.parser.parse("2 + 3")
         self.assertIsNotNone(result)
-        # Add more specific assertions based on your implementation
-    
+        # Test evaluation
+        value = self.parser.evaluate("2 + 3")
+        self.assertEqual(value, 5)
+
     def test_parse_complex_expression(self):
         result = self.parser.parse("2 * (3 + 4)")
         self.assertIsNotNone(result)
-        # Add more specific assertions based on your implementation
-    
+        # Test evaluation with proper precedence
+        value = self.parser.evaluate("2 * (3 + 4)")
+        self.assertEqual(value, 14)
+
     def test_parse_invalid_expression(self):
         with self.assertRaises(ParseError):
             self.parser.parse("2 +")
-    
+
     def test_parse_empty_input(self):
         with self.assertRaises(ParseError):
             self.parser.parse("")
+
+    def test_precedence(self):
+        # Test operator precedence
+        value = self.parser.evaluate("2 + 3 * 4")
+        self.assertEqual(value, 14)  # Should be 2 + (3 * 4) = 14, not (2 + 3) * 4 = 20
 
 if __name__ == "__main__":
     unittest.main()
@@ -169,26 +180,26 @@ def visualize_ast(ast, indent=0):
     """Visualize an AST."""
     if ast is None:
         return
-    
+
     print(" " * indent + f"{type(ast).__name__}")
-    
+
     if hasattr(ast, "value"):
         print(" " * (indent + 2) + f"value: {ast.value}")
-    
+
     if hasattr(ast, "name"):
         print(" " * (indent + 2) + f"name: {ast.name}")
-    
+
     if hasattr(ast, "op"):
         print(" " * (indent + 2) + f"op: {ast.op}")
-    
+
     if hasattr(ast, "left"):
         print(" " * (indent + 2) + "left:")
         visualize_ast(ast.left, indent + 4)
-    
+
     if hasattr(ast, "right"):
         print(" " * (indent + 2) + "right:")
         visualize_ast(ast.right, indent + 4)
-    
+
     if hasattr(ast, "statements"):
         print(" " * (indent + 2) + "statements:")
         for stmt in ast.statements:
@@ -243,12 +254,12 @@ import unittest
 class TestParser(unittest.TestCase):
     def setUp(self):
         self.parser = MyParser()
-    
+
     def test_parse_valid_input(self):
         result = self.parser.parse("valid input")
         self.assertIsNotNone(result)
         # Add more specific assertions
-    
+
     def test_parse_invalid_input(self):
         with self.assertRaises(ParseError):
             self.parser.parse("invalid input")
